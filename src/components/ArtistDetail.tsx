@@ -3,57 +3,13 @@ import Header from "./layouts/Header";
 import LoginModal from "./layouts/LoginModal";
 import SignUpModal from "./layouts/SignUpModal";
 import { artistsData } from "./artistsData";
+import ArtCard from "./ArtCard";
+import { artItems } from "./artData";
 
-// Art Card Component for Masonry
-const ArtCard: React.FC<{ image: string; title: string; index: number }> = ({ image, title, index }) => {
+// Heights for masonry effect
+const getMasonryHeight = (index: number): number => {
   const heights = [280, 320, 300, 360, 290, 340, 310, 350, 300, 330, 280, 360];
-  const height = heights[index % heights.length];
-  
-  return (
-    <div style={{
-      borderRadius: 10,
-      background: "#fff",
-      boxShadow: "0 1px 6px #0002",
-      marginBottom: window.innerWidth < 600 ? 16 : 24,
-      breakInside: "avoid",
-      display: "flex",
-      flexDirection: "column",
-      overflow: "hidden",
-    }}>
-      <img
-        src={image}
-        alt={title}
-        style={{
-          width: "100%",
-          height: `${height}px`,
-          objectFit: "cover",
-          display: "block"
-        }}
-      />
-      <div style={{
-        padding: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}>
-        <div style={{fontWeight: 600, fontSize: 16, color: "#151f33"}}>{title}</div>
-        <div style={{display: "flex", flexWrap: "wrap", gap: 8}}>
-          <span style={pill}>Art Print</span>
-          <span style={pill}>Available</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Pills styling
-const pill: React.CSSProperties = {
-  background: "#def2ea",
-  color: "#36a97c",
-  borderRadius: 6,
-  padding: "2px 8px",
-  fontSize: 11,
-  fontWeight: 600,
+  return heights[index % heights.length];
 };
 
 // ArtistDetail Component
@@ -62,15 +18,20 @@ const ArtistDetail: React.FC<{
   onNavigateToHome?: () => void;
   onNavigateToArtPrints?: () => void;
   onNavigateToArtists?: () => void;
-}> = ({ artistId, onNavigateToHome, onNavigateToArtPrints, onNavigateToArtists }) => {
+  onCardClick?: (artId: number) => void;
+  onCartClick?: (artId: number) => void;
+  onHeaderCartClick?: () => void;
+  cartItemCount?: number;
+  isItemInCart?: (artId: number) => boolean;
+}> = ({ artistId, onNavigateToHome, onNavigateToArtPrints, onNavigateToArtists, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [, forceUpdate] = useState(0);
+  const [, setForceUpdate] = useState(0);
   
   const artist = artistsData.find(a => a.id === artistId) || artistsData[0];
   
   useEffect(() => {
-    const handleResize = () => forceUpdate(n => n + 1);
+    const handleResize = () => setForceUpdate(n => n + 1);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -84,7 +45,12 @@ const ArtistDetail: React.FC<{
   };
 
   const columns = getColumns();
-  const padding = window.innerWidth < 600 ? 16 : window.innerWidth < 900 ? 24 : 32;
+  const getPadding = () => {
+    if (window.innerWidth < 600) return 16;
+    if (window.innerWidth < 900) return 24;
+    return 32;
+  };
+  const padding = getPadding();
 
   return (
     <div
@@ -105,6 +71,8 @@ const ArtistDetail: React.FC<{
         onArtPrintsClick={onNavigateToArtPrints || (() => {})}
         onArtistsClick={onNavigateToArtists}
         onHomeClick={onNavigateToHome}
+        onCartClick={onHeaderCartClick}
+        cartItemCount={cartItemCount}
         currentPage="artists"
       />
       <div
@@ -253,9 +221,31 @@ const ArtistDetail: React.FC<{
             width: '100%',
           }}
         >
-          {artist.artImages.map((image, idx) => (
-            <ArtCard key={idx} image={image} title={artist.artTitles[idx]} index={idx} />
-          ))}
+          {artist.artImages.map((image, idx) => {
+            // Find matching art item by image path or use a default
+            const artItem = artItems.find(item => 
+              item.image.includes(image.split('/').pop() || '') || 
+              image.includes(item.image.split('/').pop() || '')
+            ) || artItems[idx % artItems.length];
+            
+            return (
+              <ArtCard
+                key={`${artistId}-${idx}-${image}`}
+                image={artItem.image}
+                title={artItem.title}
+                tags={artItem.tags}
+                height={getMasonryHeight(idx)}
+                masonry={true}
+                onClick={onCardClick ? () => onCardClick(artItem.id) : undefined}
+                onCartClick={onCartClick ? (e) => {
+                  e.stopPropagation();
+                  onCartClick(artItem.id);
+                } : undefined}
+                artId={artItem.id}
+                isInCart={isItemInCart ? isItemInCart(artItem.id) : false}
+              />
+            );
+          })}
         </div>
       </div>
       <LoginModal

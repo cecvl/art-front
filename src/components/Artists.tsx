@@ -91,7 +91,9 @@ const Artists: React.FC<{
   onNavigateToHome?: () => void;
   onNavigateToArtPrints?: () => void;
   onArtistClick?: (artistId: number) => void;
-}> = ({ onNavigateToHome, onNavigateToArtPrints, onArtistClick }) => {
+  onHeaderCartClick?: () => void;
+  cartItemCount?: number;
+}> = ({ onNavigateToHome, onNavigateToArtPrints, onArtistClick, onHeaderCartClick, cartItemCount = 0 }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [, forceUpdate] = useState(0);
@@ -132,6 +134,8 @@ const Artists: React.FC<{
         onArtPrintsClick={onNavigateToArtPrints || (() => {})}
         onArtistsClick={() => {}}
         onHomeClick={onNavigateToHome}
+        onCartClick={onHeaderCartClick}
+        cartItemCount={cartItemCount}
         currentPage="artists"
       />
       <div

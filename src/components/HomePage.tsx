@@ -2,146 +2,124 @@ import React, { useState } from "react";
 import LoginModal from "./layouts/LoginModal";
 import SignUpModal from "./layouts/SignUpModal";
 import Header from "./layouts/Header";
+import ArtCard from "./ArtCard";
+import { artItems } from "./artData";
 
 // Responsive helper
 const getResponsivePadding = () =>
-  window.innerWidth < 600 ? "0 8px" : "0";
+  (typeof window !== 'undefined' && window.innerWidth < 600) ? "0 8px" : "0";
 
 // Hero Section
-const Hero: React.FC = () => (
-  <section style={{
-    paddingTop: 2,
-    paddingBottom: 10,
-    paddingLeft: window.innerWidth < 700 ? 16 : 28,
-    paddingRight: window.innerWidth < 700 ? 16 : 28,
-    width: '100%',
-    boxSizing: 'border-box',
-    textAlign: 'center',
-    background: 'transparent',
-    margin: 0,
-  }}>
-    <h1 style={{
-      fontSize: window.innerWidth < 500 ? 36 : "4vw",
-      fontWeight: 1400,
-      letterSpacing: -2,
-      lineHeight: 1,
-    }}>
-      Where Art Meets Creativity
-    </h1>
-    <div style={{
-      borderRadius: 12,
-      overflow: "hidden",
-      background: "#f3f4f6",
+const Hero: React.FC = () => {
+  const isSmall = typeof window !== 'undefined' && window.innerWidth < 500;
+  const isMedium = typeof window !== 'undefined' && window.innerWidth < 700;
+  
+  return (
+    <section style={{
+      paddingTop: 2,
+      paddingBottom: 10,
+      paddingLeft: isMedium ? 16 : 28,
+      paddingRight: isMedium ? 16 : 28,
       width: '100%',
+      boxSizing: 'border-box',
+      textAlign: 'center',
+      background: 'transparent',
       margin: 0,
-      minHeight: 140,
-      position: "relative",
-      display: "block",
     }}>
-      <img
-        src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=960&q=80"
-        style={{ width: "100%", objectFit: "cover", height: window.innerWidth < 500 ? 180 : 360, display: "block" }}
-        alt="Splash art"
-      />
-      <div style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: window.innerWidth < 500 ? 10 : 32,
-        color: "#fff",
-        fontSize: window.innerWidth < 500 ? 15 : 22,
-        textShadow: "0 2px 12px #0009",
-        background: "linear-gradient(to top, rgba(0,0,0,0.6) 50%, transparent)",
-        padding: window.innerWidth < 500 ? "0 10px" : "0 32px"
+      <h1 style={{
+        fontSize: isSmall ? 36 : "4vw",
+        fontWeight: 1400,
+        letterSpacing: -2,
+        lineHeight: 1,
       }}>
-        Art doesn’t just fill a space — it defines it. It’s a mirror to your taste, your mood, your moments. Here, every piece is more than a product — it’s a conversation starter, a memory-maker, a quiet revolution on your wall. Discover art that reflects who you are — or who you’re becoming.
+        Where Art Meets Creativity
+      </h1>
+      <div style={{
+        borderRadius: 12,
+        overflow: "hidden",
+        background: "#f3f4f6",
+        width: '100%',
+        margin: 0,
+        minHeight: 140,
+        position: "relative",
+        display: "block",
+      }}>
+        <img
+          src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=960&q=80"
+          style={{ width: "100%", objectFit: "cover", height: isSmall ? 180 : 360, display: "block" }}
+          alt="Splash art"
+        />
+        <div style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: isSmall ? 10 : 32,
+          color: "#fff",
+          fontSize: isSmall ? 15 : 22,
+          textShadow: "0 2px 12px #0009",
+          background: "linear-gradient(to top, rgba(0,0,0,0.6) 50%, transparent)",
+          padding: isSmall ? "0 10px" : "0 32px"
+        }}>
+          Art doesn't just fill a space — it defines it. It's a mirror to your taste, your mood, your moments. Here, every piece is more than a product — it's a conversation starter, a memory-maker, a quiet revolution on your wall. Discover art that reflects who you are — or who you're becoming.
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
-// Art Card Component
-const ArtCard: React.FC = () => (
-  <div style={{
-    borderRadius: 10,
-    background: "#fff",
-    boxShadow: "0 1px 6px #0002",
-    minWidth: 0,
-    minHeight: 230,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%"
-  }}>
-    <img
-      src="https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=300&q=80"
-      alt="Art"
-      style={{
-        width: "100%",
-        height: "70%",           // Image is top of the square
-        objectFit: "cover",
-        borderTopLeftRadius: 14,
-        borderTopRightRadius: 14,
-        display: "block"
-      }}
-    />
-    <div style={{
-      padding: '7px',
-      flex: 1,
-      minHeight: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-    }}>
-      <div style={{fontWeight: 600, fontSize: 16, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>Brand name</div>
-      <div style={{display: "flex", flexWrap: "wrap", gap: 8}}>
-        <span style={pill}>Country</span>
-        <span style={pill}>Series</span>
-        <span style={pill}>Brand name</span>
-      </div>
-    </div>
-  </div>
-);
 
-const gridHorizontalPadding = window.innerWidth < 700 ? 10 : 24;
+const ArtGrid: React.FC<{ 
+  onCardClick?: (artId: number) => void; 
+  onCartClick?: (artId: number) => void;
+  isItemInCart?: (artId: number) => boolean;
+}> = ({ onCardClick, onCartClick, isItemInCart }) => {
+  // Display first 12 items from artItems
+  const displayedItems = artItems.slice(0, 12);
+  
+  // Safe window access
+  const isSmall = typeof window !== 'undefined' && window.innerWidth < 600;
+  const isMedium = typeof window !== 'undefined' && window.innerWidth < 700;
+  const gridHorizontalPadding = isMedium ? 10 : 24;
 
-const ArtGrid: React.FC = () => (
-  <section style={{
-    padding: window.innerWidth < 600 ? "18px 0 38px 0" : "36px 0 80px 0",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    width: "100%",
-    boxSizing: "border-box"
-  }}>
-    <div style={{
+  return (
+    <section style={{
+      padding: isSmall ? "18px 0 38px 0" : "36px 0 80px 0",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
       width: "100%",
-      paddingLeft: gridHorizontalPadding,
-      paddingRight: gridHorizontalPadding,
-      boxSizing: "border-box",
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gridTemplateRows: "repeat(4, 1fr)",
-      gap: window.innerWidth < 600 ? 12 : 32,
-      justifyItems: "stretch",
-      alignItems: "stretch"
+      boxSizing: "border-box"
     }}>
-      {Array.from({length: 12}).map((_, idx) => (
-        <ArtCard key={idx} />
-      ))}
-    </div>
-  </section>
-);
-
-// Pills styling
-const pill: React.CSSProperties = {
-  background: "#def2ea",
-  color: "#36a97c",
-  borderRadius: 6,
-  padding: "2px 8px",
-  fontSize: 11,
-  fontWeight: 600,
+      <div style={{
+        width: "100%",
+        paddingLeft: gridHorizontalPadding,
+        paddingRight: gridHorizontalPadding,
+        boxSizing: "border-box",
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gridTemplateRows: "repeat(4, 1fr)",
+        gap: isSmall ? 12 : 32,
+        justifyItems: "stretch",
+        alignItems: "stretch"
+      }}>
+        {displayedItems.map((item) => (
+          <ArtCard
+            key={item.id}
+            image={item.image}
+            title={item.title}
+            tags={item.tags}
+            onClick={onCardClick ? () => onCardClick(item.id) : undefined}
+            onCartClick={onCartClick ? (e) => {
+              e.stopPropagation();
+              onCartClick(item.id);
+            } : undefined}
+            artId={item.id}
+            isInCart={isItemInCart ? isItemInCart(item.id) : false}
+          />
+        ))}
+      </div>
+    </section>
+  );
 };
 
 // HomePage Assembly
@@ -149,7 +127,12 @@ const HomePage: React.FC<{
   onNavigateToArtPrints: () => void;
   onNavigateToArtists?: () => void;
   currentPage: "home" | "artprints" | "artists";
-}> = ({ onNavigateToArtPrints, onNavigateToArtists, currentPage }) => {
+  onCardClick?: (artId: number) => void;
+  onCartClick?: (artId: number) => void;
+  onHeaderCartClick?: () => void;
+  cartItemCount?: number;
+  isItemInCart?: (artId: number) => boolean;
+}> = ({ onNavigateToArtPrints, onNavigateToArtists, currentPage, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   // force rerender on resize for live responsiveness
@@ -176,6 +159,8 @@ const HomePage: React.FC<{
         onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
         onArtPrintsClick={onNavigateToArtPrints}
         onArtistsClick={onNavigateToArtists}
+        onCartClick={onHeaderCartClick}
+        cartItemCount={cartItemCount}
         currentPage={currentPage}
       />
       <div
@@ -192,7 +177,7 @@ const HomePage: React.FC<{
       >
         <Hero />
         <div style={{ minHeight: 10 }} />
-        <ArtGrid />
+        <ArtGrid onCardClick={onCardClick} onCartClick={onCartClick} isItemInCart={isItemInCart} />
       </div>
       <LoginModal
         open={showLogin}
