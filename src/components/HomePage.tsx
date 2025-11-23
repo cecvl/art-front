@@ -4,6 +4,7 @@ import SignUpModal from "./layouts/SignUpModal";
 import Header from "./layouts/Header";
 import ArtCard from "./ArtCard";
 import { artItems } from "./artData";
+import ArtPrintLogo from '../assets/ArtPrint Logo.png';
 
 // Responsive helper
 const getResponsivePadding = () =>
@@ -189,6 +190,25 @@ const HomePage: React.FC<{
         onClose={() => setShowSignUp(false)}
         onLoginClick={() => { setShowSignUp(false); setShowLogin(true); }}
       />
+      {/* Footer Start */}
+      <footer style={{
+        background: '#fff', color: '#111', marginTop: 'auto', width: '100%',
+        borderTop: '1px solid #e5e5e5', padding: '18px 0 15px 0',
+        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        fontSize: 15, position: 'relative', bottom: 0, left: 0,
+        boxSizing: 'border-box', minHeight: 72, zIndex: 10
+      }}>
+        <div style={{ flex: 2, textAlign: 'center', fontSize: 16, fontWeight: 400, letterSpacing: 0 }}>
+          THE ESSENCE OF ART
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start'}}>
+          <img src={ArtPrintLogo} alt="ArtPrint Logo" style={{ height: 46, width: 'auto', marginLeft: 24 }} />
+        </div>
+        <div style={{ flex: 1, textAlign: 'right', minWidth: 120, paddingRight: 24, fontSize: 14 }}>
+          ©25 ArtPrint — All rights reserved
+        </div>
+      </footer>
+      {/* Footer End */}
     </div>
   );
 };

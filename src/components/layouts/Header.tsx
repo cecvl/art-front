@@ -1,4 +1,5 @@
 import React from "react";
+import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
 
 // Nav Button Style Function - handles active and hover states
 const getNavBtnStyle = (isActive: boolean): React.CSSProperties => ({
@@ -206,18 +207,23 @@ const Header: React.FC<{
       background: "#f9fafb",
       position: "relative"
     }}>
-    <div style={{flex: 1}} />
-    <div style={{display: "flex", gap: 8, minWidth:0, justifyContent: "center"}}>
-      <NavButton isActive={currentPage === "home"} onClick={onHomeClick}>NEW ARRIVALS</NavButton>
-      <NavButton isActive={currentPage === "artprints"} onClick={onArtPrintsClick}>ART PRINTS</NavButton>
-      <NavSelect onArtistsClick={onArtistsClick} isActive={currentPage === "artists"} />
-    </div>
-    <div style={{flex: 1, display: "flex", gap: 8, minWidth:0, justifyContent: "flex-end", alignItems: "center"}}>
-      {onCartClick && <CartIcon onClick={onCartClick} itemCount={cartItemCount} />}
-      <AuthButton onClick={onLoginClick}>Login</AuthButton>
-      <AuthButton onClick={onSignUpClick}>Sign Up</AuthButton>
-    </div>
-  </header>
+      {/* LOGO ON THE LEFT */}
+      <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', minWidth: 62 }}>
+        <img src={ArtPrintLogo} alt="ArtPrint Logo" style={{ height: 44, width: 'auto', marginRight: 24, marginLeft: 4, cursor: onHomeClick ? 'pointer' : 'default', transition: 'opacity 0.15s' }}
+          onClick={onHomeClick} />
+      </div>
+      {/* Navigation Buttons */}
+      <div style={{ flex: 1, display: "flex", gap: 8, minWidth:0, justifyContent: "center" }}>
+        <NavButton isActive={currentPage === "home"} onClick={onHomeClick}>NEW ARRIVALS</NavButton>
+        <NavButton isActive={currentPage === "artprints"} onClick={onArtPrintsClick}>ART PRINTS</NavButton>
+        <NavSelect onArtistsClick={onArtistsClick} isActive={currentPage === "artists"} />
+      </div>
+      <div style={{ flex: 1, display: "flex", gap: 8, minWidth:0, justifyContent: "flex-end", alignItems: "center" }}>
+        {onCartClick && <CartIcon onClick={onCartClick} itemCount={cartItemCount} />}
+        <AuthButton onClick={onLoginClick}>Login</AuthButton>
+        <AuthButton onClick={onSignUpClick}>Sign Up</AuthButton>
+      </div>
+    </header>
   );
 };
 
