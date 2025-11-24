@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Header from "./layouts/Header";
-import LoginModal from "./layouts/LoginModal";
-import SignUpModal from "./layouts/SignUpModal";
-import { artistsData } from "./artistsData";
-import type { ArtistData } from "./artistsData";
-import ArtPrintLogo from '../assets/ArtPrint Logo.png';
+import Header from "../navigation/Header";
+import LoginModal from "../features/auth/LoginModal";
+import SignUpModal from "../features/auth/SignUpModal";
+import { artistsData } from "../../services/artistsData";
+import type { ArtistData } from "../../services/artistsData";
+import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
 
 // Artist Card Component for Masonry
 const ArtistCard: React.FC<{ artist: ArtistData; onClick: () => void }> = ({ artist, onClick }) => {

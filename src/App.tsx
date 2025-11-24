@@ -1,11 +1,11 @@
 import { useState } from "react";
-import HomePage from "./components/HomePage";
-import ArtPrints from "./components/ArtPrints";
-import Artists from "./components/Artists";
-import ArtistDetail from "./components/ArtistDetail";
-import ProductDetail from "./components/ProductDetail";
-import Cart from "./components/Cart";
-import { artItems } from "./components/artData";
+import HomePage from "./components/pages/HomePage";
+import ArtPrints from "./components/artworks/ArtPrints";
+import Artists from "./components/artists/Artists";
+import ArtistDetail from "./components/artists/ArtistDetail";
+import ProductDetail from "./components/artworks/ProductDetail";
+import Cart from "./components/features/cart/Cart";
+import { artItems } from "./services/artData";
 
 export interface CartItem {
   id: number;

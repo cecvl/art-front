@@ -1,5 +1,5 @@
 import React from 'react';
-import './ArtCard.css';
+import '../../styles/ArtCard.css';
 
 export interface ArtCardProps {
   image: string;
