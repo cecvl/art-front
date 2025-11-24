@@ -5,7 +5,6 @@ import Header from "./layouts/Header";
 import ArtCard from "./ArtCard";
 import { artItems } from "./artData";
 import ArtPrintLogo from '../assets/ArtPrint Logo.png';
-import TimelessMasterpieces from '../assets/TimelessMasterpieces.png';
 
 // Responsive helper
 const getResponsivePadding = () =>
@@ -13,20 +12,9 @@ const getResponsivePadding = () =>
 
 // Hero Section
 const Hero: React.FC = () => {
-  const [heroIdx, setHeroIdx] = React.useState(0);
-  const heroImages = [
-    {
-      src: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=960&q=80',
-      alt: 'Splash art'
-    },
-    {
-      src: TimelessMasterpieces,
-      alt: 'Timeless Masterpieces art'
-    },
-  ];
   const isSmall = typeof window !== 'undefined' && window.innerWidth < 500;
   const isMedium = typeof window !== 'undefined' && window.innerWidth < 700;
-
+  
   return (
     <section style={{
       paddingTop: 2,
@@ -58,53 +46,23 @@ const Hero: React.FC = () => {
         display: "block",
       }}>
         <img
-          src={heroImages[heroIdx].src}
-          style={{ width: "100%", objectFit: "cover", height: isSmall ? 180 : 360, display: "block", transition: 'opacity 0.3s' }}
-          alt={heroImages[heroIdx].alt}
+          src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=960&q=80"
+          style={{ width: "100%", objectFit: "cover", height: isSmall ? 180 : 360, display: "block" }}
+          alt="Splash art"
         />
-        {/* Gradient text overlay, only show on first image */}
-        {heroIdx === 0 && (
-          <div style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: isSmall ? 10 : 32,
-            color: "#fff",
-            fontSize: isSmall ? 15 : 22,
-            textShadow: "0 2px 12px #0009",
-            background: "linear-gradient(to top, rgba(0,0,0,0.6) 50%, transparent)",
-            padding: isSmall ? "0 10px" : "0 32px"
-          }}>
-            Art doesn't just fill a space — it defines it. It's a mirror to your taste, your mood, your moments. Here, every piece is more than a product — it's a conversation starter, a memory-maker, a quiet revolution on your wall. Discover art that reflects who you are — or who you're becoming.
-          </div>
-        )}
-        {/* Add forward arrow button */}
-        <button
-          aria-label="Next Hero"
-          onClick={() => setHeroIdx((i) => (i + 1) % heroImages.length)}
-          style={{
-            position: 'absolute',
-            bottom: isSmall ? 10 : 38,
-            right: isSmall ? 6 : 18,
-            background: '#fff',
-            borderRadius: '50%',
-            border: '1px solid #ddd',
-            width: isSmall ? 32 : 48,
-            height: isSmall ? 32 : 48,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 10px #0002',
-            cursor: 'pointer',
-            padding: 0,
-            zIndex: 2,
-            outline: 'none',
-            opacity: 0.85,
-            transition: 'background 0.15s',
-          }}
-        >
-          <svg width={isSmall ? 18 : 28} height={isSmall ? 18 : 28} viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-        </button>
+        <div style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: isSmall ? 10 : 32,
+          color: "#fff",
+          fontSize: isSmall ? 15 : 22,
+          textShadow: "0 2px 12px #0009",
+          background: "linear-gradient(to top, rgba(0,0,0,0.6) 50%, transparent)",
+          padding: isSmall ? "0 10px" : "0 32px"
+        }}>
+          Art doesn't just fill a space — it defines it. It's a mirror to your taste, your mood, your moments. Here, every piece is more than a product — it's a conversation starter, a memory-maker, a quiet revolution on your wall. Discover art that reflects who you are — or who you're becoming.
+        </div>
       </div>
     </section>
   );
