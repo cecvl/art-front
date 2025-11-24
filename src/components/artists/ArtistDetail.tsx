@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Header from "./layouts/Header";
-import LoginModal from "./layouts/LoginModal";
-import SignUpModal from "./layouts/SignUpModal";
-import { artistsData } from "./artistsData";
-import ArtCard from "./ArtCard";
-import { artItems } from "./artData";
+import Header from "../navigation/Header";
+import LoginModal from "../features/auth/LoginModal";
+import SignUpModal from "../features/auth/SignUpModal";
+import { artistsData } from "../../services/artistsData";
+import ArtCard from "../artworks/ArtCard";
+import { artItems } from "../../services/artData";
 
 // Heights for masonry effect
 const getMasonryHeight = (index: number): number => {

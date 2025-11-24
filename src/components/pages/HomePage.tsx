@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import LoginModal from "./layouts/LoginModal";
-import SignUpModal from "./layouts/SignUpModal";
-import Header from "./layouts/Header";
-import ArtCard from "./ArtCard";
-import { artItems } from "./artData";
-import ArtPrintLogo from '../assets/ArtPrint Logo.png';
+import LoginModal from "../features/auth/LoginModal";
+import SignUpModal from "../features/auth/SignUpModal";
+import Header from "../navigation/Header";
+import ArtCard from "../artworks/ArtCard";
+import { artItems } from "../../services/artData";
+import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
 
 // Responsive helper
 const getResponsivePadding = () =>
