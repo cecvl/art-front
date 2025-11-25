@@ -23,6 +23,7 @@ interface CartProps {
   onUpdateQuantity?: (id: number, qty: number) => void;
   onBack?: () => void;
   onCheckout?: () => void;
+  onEditItem?: (id: number, artId?: number) => void;
 }
 
 export default function Cart({
@@ -32,6 +33,7 @@ export default function Cart({
   onUpdateQuantity,
   onBack,
   onCheckout,
+  onEditItem,
 }: Readonly<CartProps>) {
   const total = cartItems.reduce((acc, c) => {
     const price = Number(c.price) || 0;
@@ -109,22 +111,33 @@ export default function Cart({
                   <div className="cart-price-row">
                     <span className="cart-price">KES {item.price.toFixed(2)}</span>
                   </div>
-                  <div className="qty-row">
-                    <button
-                      className="qty-btn"
-                      title="Decrease"
-                      onClick={() => onUpdateQuantity?.(item.id, item.quantity - 1)}
-                    >
-                      -
-                    </button>
-                    <span className="qty">{item.quantity}</span>
-                    <button
-                      className="qty-btn"
-                      title="Increase"
-                      onClick={() => onUpdateQuantity?.(item.id, item.quantity + 1)}
-                    >
-                      +
-                    </button>
+                  <div className="cart-actions">
+                    <div className="qty-row">
+                      <button
+                        className="qty-btn"
+                        title="Decrease"
+                        onClick={() => onUpdateQuantity?.(item.id, item.quantity - 1)}
+                      >
+                        -
+                      </button>
+                      <span className="qty">{item.quantity}</span>
+                      <button
+                        className="qty-btn"
+                        title="Increase"
+                        onClick={() => onUpdateQuantity?.(item.id, item.quantity + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                    {onEditItem && (
+                      <button
+                        className="edit-item-btn"
+                        onClick={() => onEditItem(item.id, item.artId)}
+                        title="Edit item"
+                      >
+                        Edit
+                      </button>
+                    )}
                   </div>
                 </div>
                 <button

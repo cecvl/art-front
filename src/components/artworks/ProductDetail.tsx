@@ -40,9 +40,10 @@ interface ProductDetailProps {
     price: number;
   }) => void;
   onNavigateToCart?: () => void;
+  hideHeader?: boolean;
 }
 
-export default function ProductDetail({ artItemId, onAddToCart, onNavigateToCart }: ProductDetailProps) {
+export default function ProductDetail({ artItemId, onAddToCart, onNavigateToCart, hideHeader = false }: ProductDetailProps) {
   const artItem = artItemId ? artItems.find(item => item.id === artItemId) || artItems[0] : artItems[0];
   const [selectedMaterial, setMaterial] = useState(materials[0].key);
   const [selectedSize, setSize] = useState(sizes[3].key);
@@ -81,14 +82,16 @@ export default function ProductDetail({ artItemId, onAddToCart, onNavigateToCart
       margin: 0,
       padding: 0
     }}>
-      <Header
-        onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
-        onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtistsClick={() => { }}
-        onHomeClick={() => { }}
-        onCartClick={onNavigateToCart}
-        currentPage="home"
-      />
+      {!hideHeader && (
+        <Header
+          onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
+          onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
+          onArtistsClick={() => { }}
+          onHomeClick={() => { }}
+          onCartClick={onNavigateToCart}
+          currentPage="home"
+        />
+      )}
       <div style={{
         flex: 1,
         width: '100%',
