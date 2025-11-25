@@ -13,23 +13,22 @@ const getMasonryHeight = (index: number): number => {
 };
 
 // ArtistDetail Component
-const ArtistDetail: React.FC<{ 
+const ArtistDetail: React.FC<{
   artistId: number;
   onNavigateToHome?: () => void;
-  onNavigateToArtPrints?: () => void;
   onNavigateToArtists?: () => void;
   onCardClick?: (artId: number) => void;
   onCartClick?: (artId: number) => void;
   onHeaderCartClick?: () => void;
   cartItemCount?: number;
   isItemInCart?: (artId: number) => boolean;
-}> = ({ artistId, onNavigateToHome, onNavigateToArtPrints, onNavigateToArtists, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
+}> = ({ artistId, onNavigateToHome, onNavigateToArtists, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [, setForceUpdate] = useState(0);
-  
+
   const artist = artistsData.find(a => a.id === artistId) || artistsData[0];
-  
+
   useEffect(() => {
     const handleResize = () => setForceUpdate(n => n + 1);
     window.addEventListener('resize', handleResize);
@@ -68,7 +67,6 @@ const ArtistDetail: React.FC<{
       <Header
         onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
         onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtPrintsClick={onNavigateToArtPrints || (() => {})}
         onArtistsClick={onNavigateToArtists}
         onHomeClick={onNavigateToHome}
         onCartClick={onHeaderCartClick}
@@ -223,11 +221,11 @@ const ArtistDetail: React.FC<{
         >
           {artist.artImages.map((image, idx) => {
             // Find matching art item by image path or use a default
-            const artItem = artItems.find(item => 
-              item.image.includes(image.split('/').pop() || '') || 
+            const artItem = artItems.find(item =>
+              item.image.includes(image.split('/').pop() || '') ||
               image.includes(item.image.split('/').pop() || '')
             ) || artItems[idx % artItems.length];
-            
+
             return (
               <ArtCard
                 key={`${artistId}-${idx}-${image}`}

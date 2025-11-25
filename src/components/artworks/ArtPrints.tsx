@@ -13,21 +13,20 @@ const getMasonryHeight = (index: number): number => {
 };
 
 // ArtPrints Component
-const ArtPrints: React.FC<{ 
+const ArtPrints: React.FC<{
   onBack: () => void;
   onNavigateToHome?: () => void;
-  onNavigateToArtPrints?: () => void;
   onNavigateToArtists?: () => void;
   onCardClick?: (artId: number) => void;
   onCartClick?: (artId: number) => void;
   onHeaderCartClick?: () => void;
   cartItemCount?: number;
   isItemInCart?: (artId: number) => boolean;
-}> = ({ onBack, onNavigateToHome, onNavigateToArtPrints, onNavigateToArtists, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
+}> = ({ onBack, onNavigateToHome, onNavigateToArtists, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [, forceUpdate] = useState(0);
-  
+
   useEffect(() => {
     const handleResize = () => forceUpdate(n => n + 1);
     window.addEventListener('resize', handleResize);
@@ -61,12 +60,11 @@ const ArtPrints: React.FC<{
       <Header
         onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
         onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtPrintsClick={onNavigateToArtPrints || (() => {})}
         onArtistsClick={onNavigateToArtists}
         onHomeClick={onNavigateToHome || onBack}
         onCartClick={onHeaderCartClick}
         cartItemCount={cartItemCount}
-        currentPage="artprints"
+        currentPage="home"
       />
       <div
         style={{
@@ -131,7 +129,7 @@ const ArtPrints: React.FC<{
         fontSize: 15, position: 'relative', bottom: 0, left: 0,
         boxSizing: 'border-box', minHeight: 72, zIndex: 10
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start'}}>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start' }}>
           <img src={ArtPrintLogo} alt="ArtPrint Logo" style={{ height: 46, width: 'auto', marginLeft: 24 }} />
         </div>
         <div style={{ flex: 2, textAlign: 'center', fontSize: 16, fontWeight: 400, letterSpacing: 0 }}>

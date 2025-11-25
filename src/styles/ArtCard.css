@@ -46,7 +46,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.9;
   transition: opacity var(--transition-base), background var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
   z-index: 10;
   box-shadow: var(--shadow-sm);
@@ -118,6 +118,13 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.art-card-price {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  margin-top: var(--spacing-xs);
+}
+
 /* Masonry layout support */
 .art-card-masonry {
   margin-bottom: var(--spacing-lg);
@@ -128,9 +135,8 @@
   .art-card-masonry {
     margin-bottom: var(--spacing-md);
   }
-  
+
   .art-card-cart-icon {
     opacity: 1;
   }
 }
-

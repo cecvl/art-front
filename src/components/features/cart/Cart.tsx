@@ -1,5 +1,5 @@
 import '../../../styles/Cart.css';
-import type { CartItem } from '../../../App';
+import type { CartItem } from '../../../context/CartContext';
 
 // Placeholder cart items (empty for demo, structure for sample)
 const sampleCartItems: CartItem[] = [
@@ -22,16 +22,22 @@ interface CartProps {
   onRemoveItem?: (id: number) => void;
   onUpdateQuantity?: (id: number, qty: number) => void;
   onBack?: () => void;
+  onCheckout?: () => void;
 }
 
-export default function Cart({ 
-  cartItems = sampleCartItems, 
+export default function Cart({
+  cartItems = sampleCartItems,
   onStartShopping,
   onRemoveItem,
   onUpdateQuantity,
   onBack,
+  onCheckout,
 }: Readonly<CartProps>) {
-  const total = cartItems.reduce((acc, c) => acc + (c.price * c.qty), 0).toFixed(2);
+  const total = cartItems.reduce((acc, c) => {
+    const price = Number(c.price) || 0;
+    const quantity = Number(c.quantity) || 0;
+    return acc + (price * quantity);
+  }, 0).toFixed(2);
   const isEmpty = cartItems.length === 0;
 
   return (
@@ -93,49 +99,55 @@ export default function Cart({
         </div>
       ) : (
         <>
-        <div className="cart-items-list">
-          {cartItems.map(item => (
-            <div className="cart-item" key={item.id}>
-              {item.image && <img src={item.image} alt="art" className="cart-thumb" />}
-              <div className="cart-details">
-                <div className="cart-title">{item.title}</div>
-                <div className="cart-options">Material: <b>{item.material}</b> | Size: <b>{item.size}</b> | Frame: <b>{item.frame}</b></div>
-                <div className="cart-price-row">
-                  <span className="cart-price">${item.price.toFixed(2)}</span>
+          <div className="cart-items-list">
+            {cartItems.map(item => (
+              <div className="cart-item" key={item.id}>
+                {item.image && <img src={item.image} alt="art" className="cart-thumb" />}
+                <div className="cart-details">
+                  <div className="cart-title">{item.title}</div>
+                  <div className="cart-options">Material: <b>{item.material}</b> | Size: <b>{item.size}</b> | Frame: <b>{item.frame}</b></div>
+                  <div className="cart-price-row">
+                    <span className="cart-price">KES {item.price.toFixed(2)}</span>
+                  </div>
+                  <div className="qty-row">
+                    <button
+                      className="qty-btn"
+                      title="Decrease"
+                      onClick={() => onUpdateQuantity?.(item.id, item.quantity - 1)}
+                    >
+                      -
+                    </button>
+                    <span className="qty">{item.quantity}</span>
+                    <button
+                      className="qty-btn"
+                      title="Increase"
+                      onClick={() => onUpdateQuantity?.(item.id, item.quantity + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
-                <div className="qty-row">
-                  <button 
-                    className="qty-btn" 
-                    title="Decrease"
-                    onClick={() => onUpdateQuantity?.(item.id, item.qty - 1)}
-                  >
-                    -
-                  </button>
-                  <span className="qty">{item.qty}</span>
-                  <button 
-                    className="qty-btn" 
-                    title="Increase"
-                    onClick={() => onUpdateQuantity?.(item.id, item.qty + 1)}
-                  >
-                    +
-                  </button>
-                </div>
+                <button
+                  className="remove-item-btn"
+                  onClick={() => onRemoveItem?.(item.id)}
+                  aria-label="Remove item"
+                >
+                  ✕
+                </button>
               </div>
-              <button 
-                className="remove-item-btn"
-                onClick={() => onRemoveItem?.(item.id)}
-                aria-label="Remove item"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="cart-summary">
-          <span>Total:</span>
-          <b>${total}</b>
-        </div>
-        <button className="checkout-btn" disabled={cartItems.length===0}>Checkout</button>
+            ))}
+          </div>
+          <div className="cart-total">
+            <span className="total-label">Total</span>
+            <span className="total-amount">KES {total}</span>
+          </div>
+          <button
+            className="checkout-btn"
+            disabled={cartItems.length === 0}
+            onClick={onCheckout}
+          >
+            Checkout
+          </button>
         </>
       )}
     </div>

@@ -1,144 +1,19 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
-
-// Nav Button Style Function - handles active and hover states
-const getNavBtnStyle = (isActive: boolean): React.CSSProperties => ({
-  background: isActive ? "#e5e7eb" : "none",
-  border: "none",
-  color: "#151f33",
-  padding: "8px 10px",
-  fontWeight: 600,
-  fontSize: 12,
-  borderRadius: 6,
-  cursor: "pointer",
-  letterSpacing: 0.5,
-  transition: "all 0.2s ease",
-});
-
-// Auth Button Style with hover support
-const getAuthBtnStyle = (): React.CSSProperties => ({
-  background: "#fff",
-  border: "1px solid #e5e7eb",
-  color: "#151f33",
-  padding: "8px 13px",
-  fontWeight: 600,
-  fontSize: 12,
-  borderRadius: 6,
-  cursor: "pointer",
-  transition: "all 0.2s ease",
-});
-
-// Nav Button Component with hover and active states
-const NavButton: React.FC<{
-  children: React.ReactNode;
-  isActive: boolean;
-  onClick?: () => void;
-}> = ({ children, isActive, onClick }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  
-  const baseStyle = getNavBtnStyle(isActive);
-  const hoverStyle = isHovered && !isActive ? { background: "#f3f4f6" } : {};
-  
-  return (
-    <button
-      style={{ ...baseStyle, ...hoverStyle }}
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {children}
-    </button>
-  );
-};
-
-// Auth Button Component with hover states
-const AuthButton: React.FC<{
-  children: React.ReactNode;
-  onClick: () => void;
-}> = ({ children, onClick }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  
-  const baseStyle = getAuthBtnStyle();
-  const hoverStyle = isHovered ? { 
-    background: "#f3f4f6", 
-    borderColor: "#d1d5db" 
-  } : {};
-  
-  return (
-    <button
-      style={{ ...baseStyle, ...hoverStyle }}
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {children}
-    </button>
-  );
-};
-
-// Nav Select Component with hover states - acts as a button to navigate to Artists page
-const NavSelect: React.FC<{
-  onArtistsClick?: () => void;
-  isActive: boolean;
-}> = ({ onArtistsClick, isActive }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  
-  const baseStyle = getNavBtnStyle(isActive);
-  const hoverStyle = isHovered ? { background: "#f3f4f6" } : {};
-  
-  return (
-    <button
-      style={{
-        ...baseStyle,
-        ...hoverStyle,
-        paddingRight: "24px",
-        backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23151f33' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "right 8px center",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (onArtistsClick) {
-          onArtistsClick();
-        }
-      }}
-    >
-      ARTISTS
-    </button>
-  );
-};
+import { Button } from "../ui/button";
 
 // Cart Icon Component with notification badge
 const CartIcon: React.FC<{
   onClick: () => void;
   itemCount: number;
 }> = ({ onClick, itemCount }) => {
-  const [isHovered, setIsHovered] = React.useState(false);
-  
   return (
-    <button
-      style={{
-        background: "#fff",
-        border: "1px solid #e5e7eb",
-        color: "#151f33",
-        padding: "8px 12px",
-        fontWeight: 600,
-        fontSize: 12,
-        borderRadius: 6,
-        cursor: "pointer",
-        transition: "all 0.2s ease",
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        position: "relative",
-        ...(isHovered ? { background: "#f3f4f6", borderColor: "#d1d5db" } : {}),
-      }}
+    <Button
+      variant="outline"
+      size="sm"
+      className="relative flex items-center gap-2"
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       aria-label={`Cart (${itemCount} items)`}
     >
       <svg
@@ -157,31 +32,11 @@ const CartIcon: React.FC<{
         />
       </svg>
       {itemCount > 0 && (
-        <span
-          style={{
-            background: "#d53c2c",
-            color: "#fff",
-            borderRadius: "50%",
-            minWidth: "20px",
-            height: "20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "10px",
-            fontWeight: 700,
-            position: "absolute",
-            top: "-8px",
-            right: "-8px",
-            padding: itemCount > 9 ? "0 6px" : "0",
-            boxSizing: "border-box",
-            border: "2px solid #fff",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-          }}
-        >
+        <span className="absolute -top-2 -right-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
           {itemCount > 99 ? "99+" : itemCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 };
 
@@ -189,39 +44,54 @@ const CartIcon: React.FC<{
 const Header: React.FC<{
   onLoginClick: () => void;
   onSignUpClick: () => void;
-  onArtPrintsClick: () => void;
   onArtistsClick?: () => void;
   onHomeClick?: () => void;
   onCartClick?: () => void;
   cartItemCount?: number;
-  currentPage: "home" | "artprints" | "artists";
-}> = ({ onLoginClick, onSignUpClick, onArtPrintsClick, onArtistsClick, onHomeClick, onCartClick, cartItemCount = 0, currentPage }) => {
-  const isSmall = typeof window !== 'undefined' && window.innerWidth < 600;
-  
+  currentPage: "home" | "artists" | "printshop";
+}> = ({ onLoginClick, onSignUpClick, onArtistsClick, onHomeClick, onCartClick, cartItemCount = 0, currentPage }) => {
+  const navigate = useNavigate();
+
   return (
-    <header style={{
-      padding: isSmall ? "10px 6px" : 12,
-      borderBottom: "1px solid #e5e7eb",
-      display: "flex",
-      alignItems: "center",
-      background: "#f9fafb",
-      position: "relative"
-    }}>
+    <header className="sticky top-0 z-50 flex items-center border-b border-gray-200 bg-gray-50 px-3 py-3 sm:px-4">
       {/* LOGO ON THE LEFT */}
-      <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', minWidth: 62 }}>
-        <img src={ArtPrintLogo} alt="ArtPrint Logo" style={{ height: 44, width: 'auto', marginRight: 24, marginLeft: 4, cursor: onHomeClick ? 'pointer' : 'default', transition: 'opacity 0.15s' }}
-          onClick={onHomeClick} />
+      <div className="flex flex-none items-center min-w-[62px]">
+        <img
+          src={ArtPrintLogo}
+          alt="ArtPrint Logo"
+          className="ml-1 mr-6 h-11 w-auto cursor-pointer transition-opacity hover:opacity-80"
+          onClick={onHomeClick}
+        />
       </div>
       {/* Navigation Buttons */}
-      <div style={{ flex: 1, display: "flex", gap: 8, minWidth:0, justifyContent: "center" }}>
-        <NavButton isActive={currentPage === "home"} onClick={onHomeClick}>NEW ARRIVALS</NavButton>
-        <NavButton isActive={currentPage === "artprints"} onClick={onArtPrintsClick}>ART PRINTS</NavButton>
-        <NavSelect onArtistsClick={onArtistsClick} isActive={currentPage === "artists"} />
+      <div className="flex flex-1 justify-center gap-2 min-w-0">
+        <Button
+          variant={currentPage === "home" ? "secondary" : "ghost"}
+          onClick={onHomeClick}
+          className="text-xs font-semibold tracking-wide"
+        >
+          NEW ARRIVALS
+        </Button>
+
+        <Button
+          variant={currentPage === "artists" ? "secondary" : "ghost"}
+          onClick={onArtistsClick}
+          className="text-xs font-semibold tracking-wide"
+        >
+          ARTISTS
+        </Button>
+        <Button
+          variant={currentPage === "printshop" ? "secondary" : "ghost"}
+          onClick={() => navigate('/print-shop')}
+          className="text-xs font-semibold tracking-wide"
+        >
+          PRINT SHOP
+        </Button>
       </div>
-      <div style={{ flex: 1, display: "flex", gap: 8, minWidth:0, justifyContent: "flex-end", alignItems: "center" }}>
+      <div className="flex flex-1 items-center justify-end gap-2 min-w-0">
         {onCartClick && <CartIcon onClick={onCartClick} itemCount={cartItemCount} />}
-        <AuthButton onClick={onLoginClick}>Login</AuthButton>
-        <AuthButton onClick={onSignUpClick}>Sign Up</AuthButton>
+        <Button variant="outline" size="sm" onClick={onLoginClick}>Login</Button>
+        <Button variant="default" size="sm" onClick={onSignUpClick}>Sign Up</Button>
       </div>
     </header>
   );

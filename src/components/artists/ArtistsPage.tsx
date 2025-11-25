@@ -10,9 +10,9 @@ import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
 const ArtistCard: React.FC<{ artist: ArtistData; onClick: () => void }> = ({ artist, onClick }) => {
   const heights = [300, 340, 320, 360, 310, 350];
   const height = heights[artist.id % heights.length];
-  
+
   return (
-    <div 
+    <div
       style={{
         borderRadius: 10,
         background: "#fff",
@@ -52,8 +52,8 @@ const ArtistCard: React.FC<{ artist: ArtistData; onClick: () => void }> = ({ art
         gap: 10,
       }}>
         <div style={{
-          fontWeight: 700, 
-          fontSize: 18, 
+          fontWeight: 700,
+          fontSize: 18,
           color: "#151f33",
           marginBottom: 4,
         }}>
@@ -88,17 +88,16 @@ const ArtistCard: React.FC<{ artist: ArtistData; onClick: () => void }> = ({ art
 };
 
 // Artists Component
-const Artists: React.FC<{ 
+const Artists: React.FC<{
   onNavigateToHome?: () => void;
-  onNavigateToArtPrints?: () => void;
   onArtistClick?: (artistId: number) => void;
   onHeaderCartClick?: () => void;
   cartItemCount?: number;
-}> = ({ onNavigateToHome, onNavigateToArtPrints, onArtistClick, onHeaderCartClick, cartItemCount = 0 }) => {
+}> = ({ onNavigateToHome, onArtistClick, onHeaderCartClick, cartItemCount = 0 }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [, forceUpdate] = useState(0);
-  
+
   useEffect(() => {
     const handleResize = () => forceUpdate(n => n + 1);
     window.addEventListener('resize', handleResize);
@@ -132,8 +131,7 @@ const Artists: React.FC<{
       <Header
         onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
         onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtPrintsClick={onNavigateToArtPrints || (() => {})}
-        onArtistsClick={() => {}}
+        onArtistsClick={() => { }}
         onHomeClick={onNavigateToHome}
         onCartClick={onHeaderCartClick}
         cartItemCount={cartItemCount}
@@ -166,8 +164,8 @@ const Artists: React.FC<{
           }}
         >
           {artistsData.map((artist) => (
-            <ArtistCard 
-              key={artist.id} 
+            <ArtistCard
+              key={artist.id}
               artist={artist}
               onClick={() => onArtistClick?.(artist.id)}
             />
@@ -192,7 +190,7 @@ const Artists: React.FC<{
         fontSize: 15, position: 'relative', bottom: 0, left: 0,
         boxSizing: 'border-box', minHeight: 72, zIndex: 10
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start'}}>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start' }}>
           <img src={ArtPrintLogo} alt="ArtPrint Logo" style={{ height: 46, width: 'auto', marginLeft: 24 }} />
         </div>
         <div style={{ flex: 2, textAlign: 'center', fontSize: 16, fontWeight: 400, letterSpacing: 0 }}>

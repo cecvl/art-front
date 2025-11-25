@@ -5,6 +5,7 @@ export interface ArtCardProps {
   image: string;
   title: string;
   tags?: string[];
+  price?: number; // Price in KES
   onClick?: () => void;
   onCartClick?: (e: React.MouseEvent) => void;
   artId?: number;
@@ -18,9 +19,9 @@ const ArtCard: React.FC<ArtCardProps> = ({
   image,
   title,
   tags = [],
+  price,
   onClick,
   onCartClick,
-  artId,
   height,
   masonry = false,
   className = '',
@@ -84,6 +85,11 @@ const ArtCard: React.FC<ArtCardProps> = ({
                 {tag}
               </span>
             ))}
+          </div>
+        )}
+        {price && (
+          <div className="art-card-price">
+            KES {price.toLocaleString()}
           </div>
         )}
       </div>

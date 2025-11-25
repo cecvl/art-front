@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import LoginModal from "../features/auth/LoginModal";
-import SignUpModal from "../features/auth/SignUpModal";
-import Header from "../navigation/Header";
-import ArtCard from "../artworks/ArtCard";
-import { artItems } from "../../services/artData";
-import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
+import LoginModal from "../components/features/auth/LoginModal";
+import SignUpModal from "../components/features/auth/SignUpModal";
+import Header from "../components/navigation/Header";
+import ArtCard from "../components/artworks/ArtCard";
+import { artItems } from "../services/artData";
+import ArtPrintLogo from '../assets/ArtPrint Logo.png';
 
 // Responsive helper
 const getResponsivePadding = () =>
@@ -14,7 +14,7 @@ const getResponsivePadding = () =>
 const Hero: React.FC = () => {
   const isSmall = typeof window !== 'undefined' && window.innerWidth < 500;
   const isMedium = typeof window !== 'undefined' && window.innerWidth < 700;
-  
+
   return (
     <section style={{
       paddingTop: 2,
@@ -69,14 +69,14 @@ const Hero: React.FC = () => {
 };
 
 
-const ArtGrid: React.FC<{ 
-  onCardClick?: (artId: number) => void; 
+const ArtGrid: React.FC<{
+  onCardClick?: (artId: number) => void;
   onCartClick?: (artId: number) => void;
   isItemInCart?: (artId: number) => boolean;
 }> = ({ onCardClick, onCartClick, isItemInCart }) => {
   // Display first 12 items from artItems
   const displayedItems = artItems.slice(0, 12);
-  
+
   // Safe window access
   const isSmall = typeof window !== 'undefined' && window.innerWidth < 600;
   const isMedium = typeof window !== 'undefined' && window.innerWidth < 700;
@@ -109,13 +109,14 @@ const ArtGrid: React.FC<{
             image={item.image}
             title={item.title}
             tags={item.tags}
-            onClick={onCardClick ? () => onCardClick(item.id) : undefined}
-            onCartClick={onCartClick ? (e) => {
+            price={4500}
+            onClick={() => onCardClick?.(item.id)}
+            onCartClick={(e) => {
               e.stopPropagation();
-              onCartClick(item.id);
-            } : undefined}
+              onCartClick?.(item.id);
+            }}
             artId={item.id}
-            isInCart={isItemInCart ? isItemInCart(item.id) : false}
+            isInCart={isItemInCart?.(item.id)}
           />
         ))}
       </div>
@@ -124,22 +125,21 @@ const ArtGrid: React.FC<{
 };
 
 // HomePage Assembly
-const HomePage: React.FC<{ 
-  onNavigateToArtPrints: () => void;
+const HomePage: React.FC<{
   onNavigateToArtists?: () => void;
-  currentPage: "home" | "artprints" | "artists";
+  currentPage: "home" | "artists";
   onCardClick?: (artId: number) => void;
   onCartClick?: (artId: number) => void;
   onHeaderCartClick?: () => void;
   cartItemCount?: number;
   isItemInCart?: (artId: number) => boolean;
-}> = ({ onNavigateToArtPrints, onNavigateToArtists, currentPage, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
+}> = ({ onNavigateToArtists, currentPage, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   // force rerender on resize for live responsiveness
   const [, forceUpdate] = React.useState(0);
   React.useEffect(() => {
-    const handleResize = () => forceUpdate(n=>n+1);
+    const handleResize = () => forceUpdate(n => n + 1);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -158,7 +158,7 @@ const HomePage: React.FC<{
       <Header
         onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
         onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtPrintsClick={onNavigateToArtPrints}
+
         onArtistsClick={onNavigateToArtists}
         onCartClick={onHeaderCartClick}
         cartItemCount={cartItemCount}
@@ -201,7 +201,7 @@ const HomePage: React.FC<{
         <div style={{ flex: 2, textAlign: 'center', fontSize: 16, fontWeight: 400, letterSpacing: 0 }}>
           THE ESSENCE OF ART
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start'}}>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start' }}>
           <img src={ArtPrintLogo} alt="ArtPrint Logo" style={{ height: 46, width: 'auto', marginLeft: 24 }} />
         </div>
         <div style={{ flex: 1, textAlign: 'right', minWidth: 120, paddingRight: 24, fontSize: 14 }}>
