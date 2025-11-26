@@ -11,35 +11,72 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 export function LoginForm({
   className,
   onSignUpClick,
   onClose,
+  onGoogleLogin,
+  onEmailLogin,
   ...props
 }: React.ComponentPropsWithoutRef<"div"> & {
   onSignUpClick?: () => void
   onClose?: () => void
+  onGoogleLogin?: () => Promise<void>
+  onEmailLogin?: (email: string, password: string) => Promise<void>
 }) {
   const navigate = useNavigate()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleGoogleClick = async () => {
+    if (!onGoogleLogin) {
+      toast.error("Google login not configured")
+      return
+    }
+    try {
+      setLoading(true)
+      await onGoogleLogin()
+    } catch (err: any) {
+      toast.error(err?.message || "Google login failed")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // Show success toast
-    toast.success("Login successful!", {
-      description: "Welcome back to Art Print",
-    })
-
-    // Close modal if onClose is provided
-    if (onClose) {
-      onClose()
+    if (!onEmailLogin) {
+      toast.error("Email login not configured")
+      return
     }
 
-    // Navigate to homepage
-    setTimeout(() => {
-      navigate("/")
-    }, 500)
+    try {
+      setLoading(true)
+      await onEmailLogin(email, password)
+
+      // Show success toast
+      toast.success("Login successful!", {
+        description: "Welcome back to Art Print",
+      })
+
+      // Close modal if onClose is provided
+      if (onClose) {
+        onClose()
+      }
+
+      // Navigate to homepage
+      setTimeout(() => {
+        navigate("/")
+      }, 500)
+    } catch (err: any) {
+      toast.error(err?.message || "Login failed")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -60,7 +97,10 @@ export function LoginForm({
                   id="email"
                   type="email"
                   placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="grid gap-2">
@@ -73,13 +113,26 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
               </div>
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
               </Button>
-              <Button variant="outline" className="w-full" type="button">
-                Login with Google
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={handleGoogleClick}
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Login with Google"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

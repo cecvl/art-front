@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { auth, googleProvider } from "../../../lib/firebase";
+import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import { LoginForm } from "@/components/ui/login-form";
 
 // Modal Overlay Component with smooth transitions
@@ -63,11 +65,63 @@ const ModalOverlay: React.FC<{ open: boolean; onClose: () => void; children: Rea
 
 // LoginModal Component
 const LoginModal: React.FC<{ open: boolean; onClose: () => void; onSignUpClick: () => void }> = ({ open, onClose, onSignUpClick }) => {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      const res = await fetch(`${API_BASE}/sessionLogin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token: idToken }),
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Google login failed");
+      }
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const handleEmailLogin = async (email: string, password: string) => {
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await cred.user.getIdToken();
+
+      const res = await fetch(`${API_BASE}/sessionLogin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token: idToken }),
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Login failed");
+      }
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   return (
     <ModalOverlay open={open} onClose={onClose}>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm">
-          <LoginForm onSignUpClick={() => { onClose(); onSignUpClick(); }} onClose={onClose} />
+          <LoginForm 
+            onSignUpClick={() => { onClose(); onSignUpClick(); }} 
+            onClose={onClose}
+            onGoogleLogin={handleGoogleLogin}
+            onEmailLogin={handleEmailLogin}
+          />
         </div>
       </div>
     </ModalOverlay>
