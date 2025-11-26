@@ -8,7 +8,7 @@ export interface ArtCardProps {
   price?: number; // Price in KES
   onClick?: () => void;
   onCartClick?: (e: React.MouseEvent) => void;
-  artId?: number;
+  artId?: string;
   height?: number;
   masonry?: boolean;
   className?: string;
