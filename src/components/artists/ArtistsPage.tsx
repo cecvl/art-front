@@ -1,8 +1,6 @@
 // src/pages/Artists.tsx
 import React, { useState, useEffect } from "react";
 import Header from "../navigation/Header";
-import LoginModal from "../features/auth/LoginModal";
-import SignUpModal from "../features/auth/SignUpModal";
 import { fetchArtists, type Artist } from "../../services/artists";
 import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
 
@@ -71,8 +69,6 @@ const Artists: React.FC<{
   onHeaderCartClick?: () => void;
   cartItemCount?: number;
 }> = ({ onNavigateToHome, onArtistClick, onHeaderCartClick, cartItemCount = 0 }) => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
   const [artists, setArtists] = useState<Artist[]>([]);
   const [, forceUpdate] = useState(0);
 
@@ -100,10 +96,8 @@ const Artists: React.FC<{
 
   return (
     <div style={{ minHeight: '100vh', width: '100vw', overflowX: 'hidden', display: 'flex', flexDirection: 'column', background: '#fff' }}>
+      {/* Header now manages its own modals */}
       <Header
-        onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
-        onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtistsClick={() => {}}
         onHomeClick={onNavigateToHome}
         onCartClick={onHeaderCartClick}
         cartItemCount={cartItemCount}
@@ -123,17 +117,6 @@ const Artists: React.FC<{
           ))}
         </div>
       </div>
-
-      <LoginModal
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        onSignUpClick={() => { setShowLogin(false); setShowSignUp(true); }}
-      />
-      <SignUpModal
-        open={showSignUp}
-        onClose={() => setShowSignUp(false)}
-        onLoginClick={() => { setShowSignUp(false); setShowLogin(true); }}
-      />
 
       <footer style={{
         background: '#fff', color: '#111', marginTop: 'auto', width: '100%',

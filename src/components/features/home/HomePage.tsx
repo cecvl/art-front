@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import LoginModal from "../auth/LoginModal";
-import SignUpModal from "../auth/SignUpModal";
 import Header from "../../navigation/Header";
 import Footer from "../../navigation/Footer";
 import ArtCard from "../../artworks/ArtCard";
@@ -136,7 +134,6 @@ const ArtGrid: React.FC<{
 
 // --- HOMEPAGE WRAPPER — NO ARTWORK PROPS ---
 const HomePage: React.FC<{
-  onNavigateToArtists?: () => void;
   currentPage: "home" | "artists";
   onCardClick?: (artId: string) => void;
   onCartClick?: (artId: string) => void;
@@ -144,7 +141,6 @@ const HomePage: React.FC<{
   cartItemCount?: number;
   isItemInCart?: (artId: string) => boolean;
 }> = ({
-  onNavigateToArtists,
   currentPage,
   onCardClick,
   onCartClick,
@@ -152,9 +148,6 @@ const HomePage: React.FC<{
   cartItemCount = 0,
   isItemInCart,
 }) => {
-    const [showLogin, setShowLogin] = useState(false);
-    const [showSignUp, setShowSignUp] = useState(false);
-
     // Backend artworks ONLY
     const [backendArtworks, setBackendArtworks] = useState<Artwork[]>([]);
 
@@ -181,16 +174,8 @@ const HomePage: React.FC<{
           background: "#fff",
         }}
       >
+        {/* Header now manages its own modals and navigation */}
         <Header
-          onLoginClick={() => {
-            setShowLogin(true);
-            setShowSignUp(false);
-          }}
-          onSignUpClick={() => {
-            setShowSignUp(true);
-            setShowLogin(false);
-          }}
-          onArtistsClick={onNavigateToArtists}
           onCartClick={onHeaderCartClick}
           cartItemCount={cartItemCount}
           currentPage={currentPage}
@@ -215,24 +200,6 @@ const HomePage: React.FC<{
             isItemInCart={isItemInCart}
           />
         </div>
-
-        {/* AUTH MODALS */}
-        <LoginModal
-          open={showLogin}
-          onClose={() => setShowLogin(false)}
-          onSignUpClick={() => {
-            setShowLogin(false);
-            setShowSignUp(true);
-          }}
-        />
-        <SignUpModal
-          open={showSignUp}
-          onClose={() => setShowSignUp(false)}
-          onLoginClick={() => {
-            setShowSignUp(false);
-            setShowLogin(true);
-          }}
-        />
 
         {/* FOOTER */}
         <Footer />

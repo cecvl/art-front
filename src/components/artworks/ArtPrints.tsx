@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Header from "../navigation/Header";
-import LoginModal from "../features/auth/LoginModal";
-import SignUpModal from "../features/auth/SignUpModal";
 import ArtCard from "../artworks/ArtCard";
 import { fetchArtworks } from "../../services/artworks";
 import type { Artwork } from "../../services/artworks";
@@ -14,17 +12,12 @@ const getMasonryHeight = (index: number): number => {
 };
 
 const ArtPrints: React.FC<{
-  onBack: () => void;
-  onNavigateToHome?: () => void;
-  onNavigateToArtists?: () => void;
   onCardClick?: (artId: string) => void;
   onCartClick?: (artId: string) => void;
   onHeaderCartClick?: () => void;
   cartItemCount?: number;
   isItemInCart?: (artId: string) => boolean;
-}> = ({ onBack, onNavigateToHome, onNavigateToArtists, onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
+}> = ({ onCardClick, onCartClick, onHeaderCartClick, cartItemCount = 0, isItemInCart }) => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [, forceUpdate] = useState(0);
 
@@ -53,11 +46,8 @@ const ArtPrints: React.FC<{
 
   return (
     <div style={{ minHeight: '100vh', width: '100vw', overflowX: 'hidden', display: 'flex', flexDirection: 'column', background: '#fff', margin: 0, padding: 0 }}>
+      {/* Header now manages its own modals and navigation */}
       <Header
-        onLoginClick={() => { setShowLogin(true); setShowSignUp(false); }}
-        onSignUpClick={() => { setShowSignUp(true); setShowLogin(false); }}
-        onArtistsClick={onNavigateToArtists}
-        onHomeClick={onNavigateToHome || onBack}
         onCartClick={onHeaderCartClick}
         cartItemCount={cartItemCount}
         currentPage="home"
@@ -84,17 +74,6 @@ const ArtPrints: React.FC<{
           ))}
         </div>
       </div>
-
-      <LoginModal
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        onSignUpClick={() => { setShowLogin(false); setShowSignUp(true); }}
-      />
-      <SignUpModal
-        open={showSignUp}
-        onClose={() => setShowSignUp(false)}
-        onLoginClick={() => { setShowSignUp(false); setShowLogin(true); }}
-      />
 
       <footer style={{ background: '#fff', color: '#111', marginTop: 'auto', width: '100%', borderTop: '1px solid #e5e5e5', padding: '18px 0 15px 0', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', fontSize: 15, position: 'relative', bottom: 0, left: 0, boxSizing: 'border-box', minHeight: 72, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 120, justifyContent: 'flex-start' }}>

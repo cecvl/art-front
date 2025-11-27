@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { auth, googleProvider } from "../../../lib/firebase";
-import { signInWithPopup, signInWithCustomToken } from "firebase/auth";
+import { useAuth } from "../../../hooks/useAuth";
 import { SignupForm } from "@/components/ui/signup-form";
 
 // Modal Overlay Component with smooth transitions
@@ -65,25 +64,22 @@ const ModalOverlay: React.FC<{ open: boolean; onClose: () => void; children: Rea
 
 // Sign Up Modal Component
 const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: () => void }> = ({ open, onClose, onLoginClick }) => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+  const { signupWithEmail, loginWithGoogle, clearError } = useAuth();
+
+  // Clear error when modal closes
+  useEffect(() => {
+    if (!open) {
+      clearError();
+    }
+  }, [open, clearError]);
 
   const handleGoogleSignUp = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      const res = await fetch(`${API_BASE}/sessionLogin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ token: idToken }),
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || "Google signup failed");
-      }
+      await loginWithGoogle();
       onClose();
     } catch (err: any) {
-      console.error(err);
+      // Error is already set in AuthContext
+      console.error('Google signup failed:', err);
       throw err;
     }
   };
@@ -96,39 +92,14 @@ const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: 
       if (password.length < 8) {
         throw new Error("Password must be at least 8 characters");
       }
-      
+
       console.log("📝 Signup with:", { name, email });
-      // Create user on backend which returns a Firebase custom token
-      const res = await fetch(`${API_BASE}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, userType: "buyer" }),
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || "Signup failed");
-      }
-      const data = await res.json();
-      const customToken = data.token;
-      if (!customToken) throw new Error("Missing custom token from signup");
 
-      // Sign in with custom token to get an ID token, then create server session
-      const cred = await signInWithCustomToken(auth, customToken);
-      const idToken = await cred.user.getIdToken();
-
-      const sess = await fetch(`${API_BASE}/sessionLogin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ token: idToken }),
-      });
-      if (!sess.ok) {
-        const txt = await sess.text();
-        throw new Error(txt || "Failed to create session");
-      }
+      // Use AuthContext signup method
+      await signupWithEmail(email, password, name);
       onClose();
     } catch (err: any) {
-      console.error(err);
+      console.error('Email signup failed:', err);
       throw err;
     }
   };
@@ -137,8 +108,8 @@ const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: 
     <ModalOverlay open={open} onClose={onClose}>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm">
-          <SignupForm 
-            onLoginClick={() => { onClose(); onLoginClick(); }} 
+          <SignupForm
+            onLoginClick={() => { onClose(); onLoginClick(); }}
             onClose={onClose}
             onGoogleSignup={handleGoogleSignUp}
             onEmailSignup={handleEmailSignup}
@@ -150,4 +121,3 @@ const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: 
 };
 
 export default SignUpModal;
-

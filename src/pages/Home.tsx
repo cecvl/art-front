@@ -42,7 +42,6 @@ const Home = () => {
   return (
     <HomePage
       currentPage="home"
-      onNavigateToArtists={() => navigate('/artists')}
       onCardClick={(id) => navigate(`/product/${id}`)}
       onCartClick={handleCartClick}
       onHeaderCartClick={() => navigate('/cart')}
