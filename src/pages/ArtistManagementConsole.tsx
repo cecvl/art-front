@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ArtPrintLogo from '../assets/ArtPrint Logo.png';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
+import Footer from '../components/navigation/Footer';
 
 interface Artwork {
     id: string;
@@ -449,6 +450,9 @@ const ArtistManagementConsole = () => {
                     Back
                 </Button>
             </div>
+
+            {/* Footer */}
+            <Footer />
         </div>
     );
 };

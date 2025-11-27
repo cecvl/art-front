@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import LoginModal from "../components/features/auth/LoginModal";
-import SignUpModal from "../components/features/auth/SignUpModal";
-import Header from "../components/navigation/Header";
-import ArtCard from "../components/artworks/ArtCard";
-import { fetchArtworks } from "../services/artworks";
-import type { Artwork } from "../services/artworks";
-import ArtPrintLogo from "../assets/ArtPrint Logo.png";
+import LoginModal from "../auth/LoginModal";
+import SignUpModal from "../auth/SignUpModal";
+import Header from "../../navigation/Header";
+import Footer from "../../navigation/Footer";
+import ArtCard from "../../artworks/ArtCard";
+import { fetchArtworks } from "../../../services/artworks";
+import type { Artwork } from "../../../services/artworks";
 
 // Responsive padding
 const getResponsivePadding = () =>
@@ -152,127 +152,92 @@ const HomePage: React.FC<{
   cartItemCount = 0,
   isItemInCart,
 }) => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
+    const [showLogin, setShowLogin] = useState(false);
+    const [showSignUp, setShowSignUp] = useState(false);
 
-  // Backend artworks ONLY
-  const [backendArtworks, setBackendArtworks] = useState<Artwork[]>([]);
+    // Backend artworks ONLY
+    const [backendArtworks, setBackendArtworks] = useState<Artwork[]>([]);
 
-  useEffect(() => {
-    fetchArtworks().then((data) => setBackendArtworks(data));
-  }, []);
+    useEffect(() => {
+      fetchArtworks().then((data) => setBackendArtworks(data));
+    }, []);
 
-  // Reactive layout for responsive styles
-  const [, forceUpdate] = useState(0);
-  useEffect(() => {
-    const handleResize = () => forceUpdate((n) => n + 1);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    // Reactive layout for responsive styles
+    const [, forceUpdate] = useState(0);
+    useEffect(() => {
+      const handleResize = () => forceUpdate((n) => n + 1);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        overflowX: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        background: "#fff",
-      }}
-    >
-      <Header
-        onLoginClick={() => {
-          setShowLogin(true);
-          setShowSignUp(false);
-        }}
-        onSignUpClick={() => {
-          setShowSignUp(true);
-          setShowLogin(false);
-        }}
-        onArtistsClick={onNavigateToArtists}
-        onCartClick={onHeaderCartClick}
-        cartItemCount={cartItemCount}
-        currentPage={currentPage}
-      />
-
+    return (
       <div
         style={{
-          flex: 1,
-          width: "100%",
-          maxWidth: 1640,
-          margin: "0 auto",
-          padding: getResponsivePadding(),
-          boxSizing: "border-box",
-        }}
-      >
-        <Hero />
-
-        <ArtGrid
-          artworks={backendArtworks}
-          onCardClick={onCardClick}
-          onCartClick={onCartClick}
-          isItemInCart={isItemInCart}
-        />
-      </div>
-
-      {/* AUTH MODALS */}
-      <LoginModal
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        onSignUpClick={() => {
-          setShowLogin(false);
-          setShowSignUp(true);
-        }}
-      />
-      <SignUpModal
-        open={showSignUp}
-        onClose={() => setShowSignUp(false)}
-        onLoginClick={() => {
-          setShowSignUp(false);
-          setShowLogin(true);
-        }}
-      />
-
-      {/* FOOTER */}
-      <footer
-        style={{
-          background: "#fff",
-          color: "#111",
-          marginTop: "auto",
-          width: "100%",
-          borderTop: "1px solid #e5e5e5",
-          padding: "18px 0 15px 0",
+          minHeight: "100vh",
+          width: "100vw",
+          overflowX: "hidden",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          flexDirection: "column",
+          background: "#fff",
         }}
       >
-        <div style={{ flex: 2, textAlign: "center", fontSize: 16 }}>
-          THE ESSENCE OF ART
-        </div>
+        <Header
+          onLoginClick={() => {
+            setShowLogin(true);
+            setShowSignUp(false);
+          }}
+          onSignUpClick={() => {
+            setShowSignUp(true);
+            setShowLogin(false);
+          }}
+          onArtistsClick={onNavigateToArtists}
+          onCartClick={onHeaderCartClick}
+          cartItemCount={cartItemCount}
+          currentPage={currentPage}
+        />
 
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
             flex: 1,
-            justifyContent: "flex-start",
+            width: "100%",
+            maxWidth: 1640,
+            margin: "0 auto",
+            padding: getResponsivePadding(),
+            boxSizing: "border-box",
           }}
         >
-          <img
-            src={ArtPrintLogo}
-            alt="ArtPrint Logo"
-            style={{ height: 46, marginLeft: 24 }}
+          <Hero />
+
+          <ArtGrid
+            artworks={backendArtworks}
+            onCardClick={onCardClick}
+            onCartClick={onCartClick}
+            isItemInCart={isItemInCart}
           />
         </div>
 
-        <div style={{ flex: 1, textAlign: "right", paddingRight: 24 }}>
-          ©25 ArtPrint — All rights reserved
-        </div>
-      </footer>
-    </div>
-  );
-};
+        {/* AUTH MODALS */}
+        <LoginModal
+          open={showLogin}
+          onClose={() => setShowLogin(false)}
+          onSignUpClick={() => {
+            setShowLogin(false);
+            setShowSignUp(true);
+          }}
+        />
+        <SignUpModal
+          open={showSignUp}
+          onClose={() => setShowSignUp(false)}
+          onLoginClick={() => {
+            setShowSignUp(false);
+            setShowLogin(true);
+          }}
+        />
+
+        {/* FOOTER */}
+        <Footer />
+      </div>
+    );
+  };
 
 export default HomePage;

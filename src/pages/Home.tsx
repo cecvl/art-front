@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import HomePage from './HomePage';
+import HomePage from '../components/features/home/HomePage';
 import { useCart } from '../context/CartContext';
 import { fetchArtworks, type Artwork } from '../services/artworks';
 import { toast } from 'sonner';
