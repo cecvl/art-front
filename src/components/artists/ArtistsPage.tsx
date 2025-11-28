@@ -7,7 +7,7 @@ import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
 // Artist Card Component for Masonry
 const ArtistCard: React.FC<{ artist: Artist; onClick: () => void }> = ({ artist, onClick }) => {
   const heights = [300, 340, 320, 360, 310, 350];
-  const height = heights[artist.artworks.length % heights.length] || 320;
+  const height = heights[(artist.artworks?.length || 0) % heights.length] || 320;
 
   return (
     <div
@@ -34,7 +34,7 @@ const ArtistCard: React.FC<{ artist: Artist; onClick: () => void }> = ({ artist,
       }}
     >
       <img
-        src={artist.avatarUrl || artist.artworks[0]?.imageUrl || ""}
+        src={artist.avatarUrl || artist.artworks?.[0]?.imageUrl || ""}
         alt={artist.name}
         style={{
           width: "100%",
@@ -54,7 +54,7 @@ const ArtistCard: React.FC<{ artist: Artist; onClick: () => void }> = ({ artist,
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: "#9ca3af" }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12 }}>🎨</span>
-            <span>{artist.artworks.length} artworks</span>
+            <span>{artist.artworks?.length || 0} artworks</span>
           </div>
         </div>
       </div>

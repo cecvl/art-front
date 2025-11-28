@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useNavigate, useLocation } from "react-router-dom";
 import { LoginForm } from "@/components/ui/login-form";
 
 // Modal Overlay Component with smooth transitions
@@ -65,6 +66,8 @@ const ModalOverlay: React.FC<{ open: boolean; onClose: () => void; children: Rea
 // LoginModal Component
 const LoginModal: React.FC<{ open: boolean; onClose: () => void; onSignUpClick: () => void }> = ({ open, onClose, onSignUpClick }) => {
   const { loginWithEmail, loginWithGoogle, clearError } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Clear error when modal closes
   useEffect(() => {
@@ -73,10 +76,17 @@ const LoginModal: React.FC<{ open: boolean; onClose: () => void; onSignUpClick: 
     }
   }, [open, clearError]);
 
+  const handleLoginSuccess = () => {
+    // Get return URL from location state, default to homepage
+    const returnUrl = (location.state as any)?.returnUrl || '/';
+    onClose();
+    navigate(returnUrl, { replace: true });
+  };
+
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      onClose();
+      handleLoginSuccess();
     } catch (err: any) {
       // Error is already set in AuthContext
       console.error('Google login failed:', err);
@@ -87,7 +97,7 @@ const LoginModal: React.FC<{ open: boolean; onClose: () => void; onSignUpClick: 
   const handleEmailLogin = async (email: string, password: string) => {
     try {
       await loginWithEmail(email, password);
-      onClose();
+      handleLoginSuccess();
     } catch (err: any) {
       // Error is already set in AuthContext
       console.error('Email login failed:', err);

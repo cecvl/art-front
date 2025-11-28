@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { User } from '../../context/AuthContext';
 
 interface UserMenuProps {
@@ -9,11 +10,21 @@ interface UserMenuProps {
 const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
+
+    // Update button position when menu opens
+    useEffect(() => {
+        if (isOpen && buttonRef.current) {
+            setButtonRect(buttonRef.current.getBoundingClientRect());
+        }
+    }, [isOpen]);
 
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node) &&
+                buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         };
@@ -44,9 +55,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
     };
 
     return (
-        <div className="relative" ref={menuRef}>
+        <div className="relative">
             {/* User Avatar Button */}
             <button
+                ref={buttonRef}
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 aria-label="User menu"
@@ -74,8 +86,16 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
             </button>
 
             {/* Dropdown Menu */}
-            {isOpen && (
-                <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in slide-in-from-top-2 duration-200">
+            {isOpen && buttonRect && createPortal(
+                <div
+                    ref={menuRef}
+                    className="fixed w-56 origin-top-right rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in slide-in-from-top-2 duration-200"
+                    style={{
+                        top: `${buttonRect.bottom + 8}px`,
+                        right: `${window.innerWidth - buttonRect.right}px`,
+                        zIndex: 99999,
+                    }}
+                >
                     {/* User Info Section */}
                     <div className="border-b border-gray-100 px-4 py-3">
                         <p className="text-sm font-medium text-gray-900 truncate">
@@ -126,7 +146,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
                             Logout
                         </button>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

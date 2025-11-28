@@ -21,9 +21,10 @@ export interface UserProfile {
     displayName?: string;
     name?: string;
     photoURL?: string;
-    portfolioUrl?: string;
-    instagram?: string;
-    behance?: string;
+    description?: string;
+    dateOfBirth?: string;
+    avatarUrl?: string;
+    backgroundUrl?: string;
   };
   artworks: Artwork[];
 }
@@ -67,3 +68,50 @@ export const getProfile = async (): Promise<UserProfile | null> => {
     return null;
   }
 };
+
+// Update user profile (requires session cookie)
+export const updateProfile = async (formData: FormData): Promise<void> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/updateprofile`, {
+      method: 'POST',
+      credentials: 'include', // Important: sends session cookie for authentication
+      body: formData, // multipart/form-data - don't set Content-Type header, browser will set it with boundary
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error('Not authenticated');
+      }
+      const errorData = await res.text();
+      throw new Error(errorData || `Failed to update profile: ${res.status}`);
+    }
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    throw err;
+  }
+};
+
+// Upload artwork (requires session cookie and artist role)
+export const uploadArtwork = async (formData: FormData): Promise<{ url: string }> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/artworks/upload`, {
+      method: 'POST',
+      credentials: 'include', // Important: sends session cookie for authentication
+      body: formData, // multipart/form-data - don't set Content-Type header
+    });
+
+    if (!res.ok) {
+      if (res.status === 403) {
+        throw new Error('Only artists can upload artworks');
+      }
+      const errorData = await res.text();
+      throw new Error(errorData || `Upload failed: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error uploading artwork:", err);
+    throw err;
+  }
+};
+

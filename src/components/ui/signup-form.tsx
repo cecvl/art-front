@@ -24,9 +24,10 @@ export function SignupForm({
     onLoginClick?: () => void
     onClose?: () => void
     onGoogleSignup?: () => Promise<void>
-    onEmailSignup?: (name: string, email: string, password: string, confirmPassword: string) => Promise<void>
+    onEmailSignup?: (name: string, email: string, password: string, confirmPassword: string, userType: string) => Promise<void>
 }) {
     const navigate = useNavigate()
+    const [userType, setUserType] = useState<'buyer' | 'artist' | 'printShop'>('buyer')
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -58,7 +59,7 @@ export function SignupForm({
 
         try {
             setLoading(true)
-            await onEmailSignup(name, email, password, confirmPassword)
+            await onEmailSignup(name, email, password, confirmPassword, userType)
 
             // Show success toast
             toast.success("Account created successfully!", {
@@ -93,6 +94,42 @@ export function SignupForm({
                 <CardContent>
                     <form onSubmit={handleSubmit}>
                         <div className="flex flex-col gap-6">
+                            {/* User Type Selector */}
+                            <div className="grid gap-2">
+                                <Label>Account Type</Label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <Button
+                                        type="button"
+                                        variant={userType === 'buyer' ? 'default' : 'outline'}
+                                        onClick={() => setUserType('buyer')}
+                                        disabled={loading}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <span>🛍️</span>
+                                        <span>Buyer</span>
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={userType === 'artist' ? 'default' : 'outline'}
+                                        onClick={() => setUserType('artist')}
+                                        disabled={loading}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <span>🎨</span>
+                                        <span>Artist</span>
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={userType === 'printShop' ? 'default' : 'outline'}
+                                        onClick={() => setUserType('printShop')}
+                                        disabled={loading}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <span>🖨️</span>
+                                        <span>Shop</span>
+                                    </Button>
+                                </div>
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Full Name</Label>
                                 <Input
@@ -119,8 +156,8 @@ export function SignupForm({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="password">Password</Label>
-                                <Input 
-                                    id="password" 
+                                <Input
+                                    id="password"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -133,8 +170,8 @@ export function SignupForm({
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="confirm-password">Confirm Password</Label>
-                                <Input 
-                                    id="confirm-password" 
+                                <Input
+                                    id="confirm-password"
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -145,9 +182,9 @@ export function SignupForm({
                             <Button type="submit" className="w-full" disabled={loading}>
                                 {loading ? "Creating account..." : "Create Account"}
                             </Button>
-                            <Button 
-                                variant="outline" 
-                                className="w-full" 
+                            <Button
+                                variant="outline"
+                                className="w-full"
                                 type="button"
                                 onClick={handleGoogleClick}
                                 disabled={loading}

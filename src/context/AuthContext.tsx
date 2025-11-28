@@ -3,10 +3,10 @@ import type { ReactNode } from 'react';
 import { auth } from '../lib/firebase';
 import {
     signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
     signInWithPopup,
     signOut,
-    updateProfile
+    updateProfile,
+    onAuthStateChanged
 } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { googleProvider } from '../lib/firebase';
@@ -34,7 +34,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
     loginWithEmail: (email: string, password: string) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
-    signupWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
+    signupWithEmail: (email: string, password: string, displayName: string, userType: string) => Promise<void>;
     logout: () => Promise<void>;
     clearError: () => void;
 }
@@ -103,18 +103,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Check for existing session on mount
+    // Listen to Firebase auth state changes and sync with backend session
     useEffect(() => {
-        const initAuth = async () => {
-            setLoading(true);
-            const sessionUser = await validateSession();
-            if (sessionUser) {
-                setUser(sessionUser);
+        setLoading(true);
+
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+                // User is signed in with Firebase
+                try {
+                    // First, try to validate existing backend session
+                    const sessionUser = await validateSession();
+
+                    if (sessionUser) {
+                        // Backend session is valid, use it
+                        setUser(sessionUser);
+                    } else {
+                        // Backend session expired or doesn't exist, create new one
+                        console.log('Creating new backend session...');
+                        const idToken = await firebaseUser.getIdToken();
+                        await createSession(idToken);
+                        setUser(convertFirebaseUser(firebaseUser));
+                    }
+                } catch (error) {
+                    console.error('Session sync failed:', error);
+                    // If session creation fails, still set user from Firebase
+                    setUser(convertFirebaseUser(firebaseUser));
+                }
+            } else {
+                // User is signed out
+                setUser(null);
             }
             setLoading(false);
-        };
+        });
 
-        initAuth();
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
     }, []);
 
     // Login with email and password
@@ -190,25 +213,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const signupWithEmail = async (
         email: string,
         password: string,
-        displayName: string
+        displayName: string,
+        userType: string
     ): Promise<void> => {
         try {
             setLoading(true);
             setError(null);
 
-            // Create Firebase user
-            const credential = await createUserWithEmailAndPassword(auth, email, password);
+            // Call backend signup endpoint
+            // Backend will create Firebase user AND Firestore document with roles
+            const signupResponse = await fetch(`${API_BASE}/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    userType
+                }),
+            });
 
-            // Update display name
+            if (!signupResponse.ok) {
+                const errorText = await signupResponse.text();
+                throw new Error(errorText || 'Backend signup failed');
+            }
+
+            // Backend returns a custom token
+            const { token: customToken } = await signupResponse.json();
+
+            // Sign in with the custom token from backend
+            const { signInWithCustomToken } = await import('firebase/auth');
+            const credential = await signInWithCustomToken(auth, customToken);
+
+            // Update display name in Firebase
             await updateProfile(credential.user, { displayName });
 
-            // Get ID token
+            // IMPORTANT: Also set userType in Firestore for backend compatibility
+            // Backend artwork upload checks for userType field, not just roles array
+            const { getFirestore, doc, updateDoc } = await import('firebase/firestore');
+            const db = getFirestore();
+            await updateDoc(doc(db, 'users', credential.user.uid), {
+                userType: userType,
+                name: displayName
+            });
+
+            // Get ID token for session
             const idToken = await credential.user.getIdToken();
 
             // Create backend session
             await createSession(idToken);
 
-            // Set user state with updated display name
+            // Set user state
             setUser({
                 uid: credential.user.uid,
                 email: credential.user.email,
@@ -219,13 +273,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.error('Signup error:', err);
 
             let errorMessage = 'Signup failed. Please try again.';
-            if (err.code === 'auth/email-already-in-use') {
+            if (err.message?.includes('email-already-in-use') || err.message?.includes('User creation failed')) {
                 errorMessage = 'An account with this email already exists.';
-            } else if (err.code === 'auth/weak-password') {
-                errorMessage = 'Password is too weak. Use at least 6 characters.';
-            } else if (err.code === 'auth/invalid-email') {
-                errorMessage = 'Invalid email address.';
-            } else if (err.code === 'auth/network-request-failed') {
+            } else if (err.message?.includes('Invalid user type')) {
+                errorMessage = 'Invalid account type selected.';
+            } else if (err.message?.includes('network')) {
                 errorMessage = 'Network error. Please check your connection.';
             }
 

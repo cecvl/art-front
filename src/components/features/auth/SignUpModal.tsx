@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SignupForm } from "@/components/ui/signup-form";
 
 // Modal Overlay Component with smooth transitions
@@ -65,6 +66,8 @@ const ModalOverlay: React.FC<{ open: boolean; onClose: () => void; children: Rea
 // Sign Up Modal Component
 const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: () => void }> = ({ open, onClose, onLoginClick }) => {
   const { signupWithEmail, loginWithGoogle, clearError } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Clear error when modal closes
   useEffect(() => {
@@ -73,10 +76,17 @@ const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: 
     }
   }, [open, clearError]);
 
+  const handleSignupSuccess = () => {
+    // Get return URL from location state, default to homepage
+    const returnUrl = (location.state as any)?.returnUrl || '/';
+    onClose();
+    navigate(returnUrl, { replace: true });
+  };
+
   const handleGoogleSignUp = async () => {
     try {
       await loginWithGoogle();
-      onClose();
+      handleSignupSuccess();
     } catch (err: any) {
       // Error is already set in AuthContext
       console.error('Google signup failed:', err);
@@ -84,7 +94,7 @@ const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: 
     }
   };
 
-  const handleEmailSignup = async (name: string, email: string, password: string, confirmPassword: string) => {
+  const handleEmailSignup = async (name: string, email: string, password: string, confirmPassword: string, userType: string) => {
     try {
       if (password !== confirmPassword) {
         throw new Error("Passwords do not match");
@@ -93,11 +103,11 @@ const SignUpModal: React.FC<{ open: boolean; onClose: () => void; onLoginClick: 
         throw new Error("Password must be at least 8 characters");
       }
 
-      console.log("📝 Signup with:", { name, email });
+      console.log("📝 Signup with:", { name, email, userType });
 
       // Use AuthContext signup method
-      await signupWithEmail(email, password, name);
-      onClose();
+      await signupWithEmail(email, password, name, userType);
+      handleSignupSuccess();
     } catch (err: any) {
       console.error('Email signup failed:', err);
       throw err;

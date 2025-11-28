@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getProfile, type UserProfile } from '../services/artists';
+import { getProfile, updateProfile, uploadArtwork, type UserProfile } from '../services/artists';
 import ArtPrintLogo from '../assets/ArtPrint Logo.png';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
@@ -24,11 +24,21 @@ const ArtistManagementConsole = () => {
     const [loading, setLoading] = useState(true);
 
     // Form state
-    const [artistName, setArtistName] = useState('');
-    const [portfolioUrl, setPortfolioUrl] = useState('');
-    const [instagram, setInstagram] = useState('');
-    const [behance, setBehance] = useState('');
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Upload artwork state
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [artworkFile, setArtworkFile] = useState<File | null>(null);
+    const [artworkTitle, setArtworkTitle] = useState('');
+    const [artworkDescription, setArtworkDescription] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const printShops: PrintShop[] = [
         { id: '1', name: 'Nairobi Art House', materials: 'Canvas, Wood', rating: 4.8 },
@@ -47,11 +57,10 @@ const ArtistManagementConsole = () => {
                 const data = await getProfile();
                 if (data) {
                     setProfile(data);
-                    // Populate form fields
-                    setArtistName(data.user.displayName || data.user.name || data.user.email || '');
-                    setPortfolioUrl(data.user.portfolioUrl || '');
-                    setInstagram(data.user.instagram || '');
-                    setBehance(data.user.behance || '');
+                    // Populate form fields from backend data
+                    setName(data.user.displayName || data.user.name || '');
+                    setDescription(data.user.description || '');
+                    setDateOfBirth(data.user.dateOfBirth || '');
                 } else {
                     toast.error('Failed to load profile');
                 }
@@ -76,8 +85,82 @@ const ArtistManagementConsole = () => {
         }
     };
 
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        // Validate file size (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('Image must be less than 10MB');
+            return;
+        }
+
+        setArtworkFile(file);
+
+        // Generate preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleUploadArtwork = async () => {
+        setIsUploading(true);
+        try {
+            // Validation
+            if (!artworkFile) {
+                toast.error('Please select an image');
+                return;
+            }
+            if (!artworkTitle.trim()) {
+                toast.error('Title is required');
+                return;
+            }
+            if (!artworkDescription.trim()) {
+                toast.error('Description is required');
+                return;
+            }
+
+            // Build FormData
+            const formData = new FormData();
+            formData.append('file', artworkFile);
+            formData.append('title', artworkTitle.trim());
+            formData.append('description', artworkDescription.trim());
+
+            // Upload
+            await uploadArtwork(formData);
+
+            toast.success('Artwork uploaded successfully!');
+
+            // Reset form
+            setArtworkFile(null);
+            setArtworkTitle('');
+            setArtworkDescription('');
+            setImagePreview(null);
+            setShowUploadModal(false);
+
+            // Reload profile to show new artwork
+            const updatedProfile = await getProfile();
+            if (updatedProfile) {
+                setProfile(updatedProfile);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error(error instanceof Error ? error.message : 'Upload failed');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handleAddArtwork = () => {
-        toast.info('Add artwork functionality coming soon');
+        setShowUploadModal(true);
     };
 
     const handleEditArtwork = (artworkId: string) => {
@@ -85,12 +168,71 @@ const ArtistManagementConsole = () => {
     };
 
     const handleAvatarUpload = () => {
-        toast.info('Avatar upload functionality coming soon');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+                setAvatarFile(file);
+                toast.success('Avatar selected. Click "Save Profile" to upload.');
+            }
+        };
+        input.click();
     };
 
-    const handleSaveProfile = () => {
-        toast.success('Profile saved successfully');
-        // TODO: Implement profile update API call
+    const handleBackgroundUpload = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+                setBackgroundFile(file);
+                toast.success('Background image selected. Click "Save Profile" to upload.');
+            }
+        };
+        input.click();
+    };
+
+    const handleSaveProfile = async () => {
+        setIsSaving(true);
+        try {
+            const formData = new FormData();
+
+            // Add text fields if they have values
+            if (name.trim()) formData.append('name', name.trim());
+            if (description.trim()) formData.append('description', description.trim());
+            if (dateOfBirth) formData.append('dateOfBirth', dateOfBirth);
+
+            // Add file fields if selected
+            if (avatarFile) formData.append('avatar', avatarFile);
+            if (backgroundFile) formData.append('background', backgroundFile);
+
+            // Check if there's anything to update
+            if (Array.from(formData.keys()).length === 0) {
+                toast.error('No changes to save');
+                return;
+            }
+
+            await updateProfile(formData);
+            toast.success('Profile updated successfully!');
+
+            // Clear file selections after successful upload
+            setAvatarFile(null);
+            setBackgroundFile(null);
+
+            // Reload profile to show updated data
+            const updatedProfile = await getProfile();
+            if (updatedProfile) {
+                setProfile(updatedProfile);
+            }
+        } catch (error) {
+            console.error('Profile update error:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to update profile');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -184,9 +326,9 @@ const ArtistManagementConsole = () => {
                                     <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: 600 }}>Name</label>
                                     <input
                                         type="text"
-                                        value={artistName}
-                                        onChange={(e) => setArtistName(e.target.value)}
-                                        placeholder="Artist Name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        placeholder="Your Name"
                                         style={{
                                             width: '100%',
                                             padding: '10px',
@@ -201,12 +343,12 @@ const ArtistManagementConsole = () => {
                                         Email: {profile?.user.email}
                                     </div>
 
-                                    <label style={{ marginTop: '10px', display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: 600 }}>Links</label>
-                                    <input
-                                        type="text"
-                                        value={portfolioUrl}
-                                        onChange={(e) => setPortfolioUrl(e.target.value)}
-                                        placeholder="Portfolio URL"
+                                    <label style={{ marginTop: '10px', display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: 600 }}>Description / Bio</label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Tell us about yourself and your art..."
+                                        rows={3}
                                         style={{
                                             width: '100%',
                                             padding: '10px',
@@ -215,28 +357,16 @@ const ArtistManagementConsole = () => {
                                             borderRadius: '4px',
                                             marginBottom: '10px',
                                             fontSize: '0.95rem',
+                                            fontFamily: 'inherit',
+                                            resize: 'vertical',
                                         }}
                                     />
+
+                                    <label style={{ marginTop: '10px', display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: 600 }}>Date of Birth</label>
                                     <input
-                                        type="text"
-                                        value={instagram}
-                                        onChange={(e) => setInstagram(e.target.value)}
-                                        placeholder="Instagram"
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px',
-                                            border: '1px solid #ccc',
-                                            borderLeft: '3px solid #FFD700',
-                                            borderRadius: '4px',
-                                            marginBottom: '10px',
-                                            fontSize: '0.95rem',
-                                        }}
-                                    />
-                                    <input
-                                        type="text"
-                                        value={behance}
-                                        onChange={(e) => setBehance(e.target.value)}
-                                        placeholder="Behance/Dribbble"
+                                        type="date"
+                                        value={dateOfBirth}
+                                        onChange={(e) => setDateOfBirth(e.target.value)}
                                         style={{
                                             width: '100%',
                                             padding: '10px',
@@ -248,8 +378,38 @@ const ArtistManagementConsole = () => {
                                         }}
                                     />
 
-                                    <Button onClick={handleSaveProfile} className="mt-2">
-                                        Save Profile
+                                    <label style={{ marginTop: '10px', display: 'block', marginBottom: '5px', fontSize: '0.9rem', fontWeight: 600 }}>Background Image</label>
+                                    <button
+                                        onClick={handleBackgroundUpload}
+                                        style={{
+                                            width: '100%',
+                                            padding: '10px',
+                                            border: '1px solid #ccc',
+                                            borderLeft: '3px solid #FFD700',
+                                            borderRadius: '4px',
+                                            marginBottom: '10px',
+                                            fontSize: '0.95rem',
+                                            background: backgroundFile ? '#fffbe6' : '#fff',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            color: backgroundFile ? '#000' : '#666',
+                                        }}
+                                    >
+                                        {backgroundFile ? `✓ ${backgroundFile.name}` : 'Choose Background Image...'}
+                                    </button>
+
+                                    {avatarFile && (
+                                        <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '10px' }}>
+                                            Avatar selected: {avatarFile.name}
+                                        </div>
+                                    )}
+
+                                    <Button
+                                        onClick={handleSaveProfile}
+                                        className="mt-2"
+                                        disabled={isSaving}
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Profile'}
                                     </Button>
                                 </div>
                             </div>
@@ -513,6 +673,183 @@ const ArtistManagementConsole = () => {
                     Back
                 </Button>
             </div>
+
+            {/* Upload Artwork Modal */}
+            {showUploadModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        background: 'rgba(0,0,0,0.5)',
+                        backdropFilter: 'blur(4px)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px',
+                    }}
+                    onClick={() => !isUploading && setShowUploadModal(false)}
+                >
+                    <div
+                        style={{
+                            background: '#fff',
+                            borderRadius: '8px',
+                            maxWidth: '600px',
+                            width: '100%',
+                            maxHeight: '90vh',
+                            overflow: 'auto',
+                            padding: '24px',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.5rem' }}>
+                            Upload New Artwork
+                        </h2>
+
+                        {/* Image Upload Area */}
+                        <div
+                            style={{
+                                border: '2px dashed #ccc',
+                                borderRadius: '8px',
+                                padding: '24px',
+                                textAlign: 'center',
+                                marginBottom: '20px',
+                                background: '#fafafa',
+                            }}
+                        >
+                            {imagePreview ? (
+                                <div>
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        style={{
+                                            maxHeight: '300px',
+                                            maxWidth: '100%',
+                                            borderRadius: '4px',
+                                            marginBottom: '12px',
+                                        }}
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            setArtworkFile(null);
+                                            setImagePreview(null);
+                                        }}
+                                        disabled={isUploading}
+                                    >
+                                        Change Image
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                        style={{ display: 'none' }}
+                                        id="artwork-upload-input"
+                                        disabled={isUploading}
+                                    />
+                                    <label
+                                        htmlFor="artwork-upload-input"
+                                        style={{
+                                            cursor: isUploading ? 'not-allowed' : 'pointer',
+                                            display: 'block',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '3rem', marginBottom: '8px' }}>📷</div>
+                                        <div style={{ fontSize: '1rem', marginBottom: '4px', color: '#666' }}>
+                                            Click to upload image
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: '#999' }}>
+                                            PNG, JPG up to 10MB
+                                        </div>
+                                    </label>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Title Input */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label
+                                style={{
+                                    display: 'block',
+                                    marginBottom: '6px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                Title *
+                            </label>
+                            <input
+                                type="text"
+                                value={artworkTitle}
+                                onChange={(e) => setArtworkTitle(e.target.value)}
+                                placeholder="Enter artwork title"
+                                disabled={isUploading}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    fontSize: '0.95rem',
+                                }}
+                            />
+                        </div>
+
+                        {/* Description Textarea */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <label
+                                style={{
+                                    display: 'block',
+                                    marginBottom: '6px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                Description *
+                            </label>
+                            <textarea
+                                value={artworkDescription}
+                                onChange={(e) => setArtworkDescription(e.target.value)}
+                                placeholder="Describe your artwork..."
+                                rows={4}
+                                disabled={isUploading}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'inherit',
+                                    resize: 'vertical',
+                                }}
+                            />
+                        </div>
+
+                        {/* Buttons */}
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowUploadModal(false)}
+                                disabled={isUploading}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleUploadArtwork}
+                                disabled={!artworkFile || !artworkTitle.trim() || !artworkDescription.trim() || isUploading}
+                            >
+                                {isUploading ? 'Uploading...' : 'Upload Artwork'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <Footer />
