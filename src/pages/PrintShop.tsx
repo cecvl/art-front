@@ -1,57 +1,96 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import ArtPrintLogo from '../assets/ArtPrint Logo.png';
-import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import Footer from '../components/navigation/Footer';
-
-interface SizeOption {
-    width: number;
-    height: number;
-    priceAddon: number;
-}
-
-interface MaterialOption {
-    name: string;
-    available: boolean;
-    basePrice: number;
-}
-
-interface FrameOption {
-    id: string;
-    designId: string;
-    price: number;
-    sameColor: boolean;
-}
+import ServiceManager from '../components/printshop/ServiceManager';
+import PricingMatrixEditor from '../components/printshop/PricingMatrixEditor';
+import type { PrintShop as PrintShopType, PrintService } from '../types/printshop';
+import * as printShopService from '../services/printshop';
 
 const PrintShop = () => {
     const navigate = useNavigate();
-    const [businessName, setBusinessName] = useState('');
-    const [email, setEmail] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
-    const [processingLocation, setProcessingLocation] = useState('');
-    const [deliveryLocation, setDeliveryLocation] = useState('');
-    const [diffLocation, setDiffLocation] = useState(false);
 
-    const [unit, setUnit] = useState<'in' | 'cm'>('in');
-    const [materials, setMaterials] = useState<MaterialOption[]>([
-        { name: 'Canvas', available: true, basePrice: 0 },
-        { name: 'Ink (Fine Art Paper)', available: false, basePrice: 0 },
-        { name: 'Wood Panel', available: false, basePrice: 0 },
-    ]);
+    // Tab navigation
+    const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'pricing'>('profile');
 
-    const [sizes, setSizes] = useState<SizeOption[]>([
-        { width: 0, height: 0, priceAddon: 0 },
-        { width: 0, height: 0, priceAddon: 0 },
-    ]);
+    // Shop data
+    const [shopProfile, setShopProfile] = useState<PrintShopType | null>(null);
+    const [services, setServices] = useState<PrintService[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [shopExists, setShopExists] = useState(false);
 
-    const [frames, setFrames] = useState<FrameOption[]>([
-        { id: '1', designId: '#001', price: 0, sameColor: false },
-        { id: '2', designId: '#002', price: 0, sameColor: false },
-    ]);
+    // Profile form
+    const [formData, setFormData] = useState({
+        name: '',
+        contactEmail: '',
+        contactPhone: '',
+        location: '',
+        description: '',
+        isActive: true,
+    });
 
-    const [glassDiscount, setGlassDiscount] = useState(0);
-    const [saving, setSaving] = useState(false);
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+
+            // Load shop profile
+            try {
+                const profile = await printShopService.getShopProfile();
+                setShopProfile(profile);
+                setShopExists(true);
+                setFormData({
+                    name: profile.name,
+                    contactEmail: profile.contactEmail,
+                    contactPhone: profile.contactPhone,
+                    location: profile.location,
+                    description: profile.description || '',
+                    isActive: profile.isActive,
+                });
+            } catch (error: any) {
+                if (error.message === 'SHOP_NOT_FOUND') {
+                    setShopExists(false);
+                } else {
+                    console.error('Failed to load shop:', error);
+                    toast.error('Failed to load shop profile');
+                }
+            }
+
+            // Load services
+            try {
+                const servicesData = await printShopService.getServices();
+                setServices(servicesData);
+            } catch (error) {
+                console.error('Failed to load services:', error);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            if (shopExists) {
+                await printShopService.updateShopProfile(formData);
+                toast.success('Profile updated successfully');
+            } else {
+                await printShopService.createShopProfile(formData);
+                toast.success('Shop profile created successfully');
+                setShopExists(true);
+            }
+            loadData();
+        } catch (error: any) {
+            console.error('Failed to save profile:', error);
+            toast.error(error.message || 'Failed to save profile');
+        }
+    };
 
     const currentDate = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
@@ -59,36 +98,6 @@ const PrintShop = () => {
         month: 'long',
         day: 'numeric',
     });
-
-    const handleMaterialChange = (index: number, field: keyof MaterialOption, value: boolean | number) => {
-        const newMaterials = [...materials];
-        newMaterials[index] = { ...newMaterials[index], [field]: value };
-        setMaterials(newMaterials);
-    };
-
-    const handleSizeChange = (index: number, field: keyof SizeOption, value: number) => {
-        const newSizes = [...sizes];
-        newSizes[index] = { ...newSizes[index], [field]: value };
-        setSizes(newSizes);
-    };
-
-    const addSizeRow = () => {
-        setSizes([...sizes, { width: 0, height: 0, priceAddon: 0 }]);
-    };
-
-    const handleFrameChange = (index: number, field: keyof FrameOption, value: number | boolean) => {
-        const newFrames = [...frames];
-        newFrames[index] = { ...newFrames[index], [field]: value };
-        setFrames(newFrames);
-    };
-
-    const handleSave = () => {
-        setSaving(true);
-        setTimeout(() => {
-            alert('Shop Configuration Saved Successfully!');
-            setSaving(false);
-        }, 1000);
-    };
 
     return (
         <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '50px' }}>
@@ -99,6 +108,7 @@ const PrintShop = () => {
                         src={ArtPrintLogo}
                         alt="ArtPrint Logo"
                         className="ml-1 mr-6 h-11 w-auto cursor-pointer transition-opacity hover:opacity-80"
+                        onClick={() => navigate('/')}
                     />
                 </div>
             </header>
@@ -113,12 +123,7 @@ const PrintShop = () => {
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(-1)}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                    }}
+                    onClick={() => navigate('/')}
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -129,7 +134,7 @@ const PrintShop = () => {
 
             {/* Main Container */}
             <div style={{
-                maxWidth: '900px',
+                maxWidth: '1200px',
                 margin: '2rem auto',
                 background: '#ffffff',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
@@ -145,489 +150,189 @@ const PrintShop = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                 }}>
-                    <h2 style={{ margin: 0, color: '#1a1a1a' }}>Printshop Console Mgt</h2>
+                    <h2 style={{ margin: 0, color: '#1a1a1a' }}>Print Shop Console</h2>
                     <div style={{ color: '#888', fontSize: '0.9rem' }}>{currentDate}</div>
                 </div>
 
-                <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                    {/* Section 1: Merchant Profile */}
-                    <div style={{ padding: '2rem', borderBottom: '1px solid #e0e0e0' }}>
-                        <div style={{
-                            fontSize: '1.1rem',
-                            fontWeight: 'bold',
-                            marginBottom: '1.5rem',
-                            color: '#1a1a1a',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                        }}>
-                            <span style={{
-                                background: '#FFD700',
-                                color: '#1a1a1a',
-                                width: '24px',
-                                height: '24px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '50%',
-                                fontSize: '0.8rem',
-                            }}>1</span>
-                            Merchant Profile
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                            <div style={{ gridColumn: '1 / -1' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>
-                                    Business Name
-                                </label>
-                                <input
-                                    type="text"
-                                    value={businessName}
-                                    onChange={(e) => setBusinessName(e.target.value)}
-                                    placeholder="e.g. Nairobi Art House"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        fontSize: '1rem',
-                                    }}
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="contact@shop.com"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        fontSize: '1rem',
-                                    }}
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>
-                                    Contact Number
-                                </label>
-                                <input
-                                    type="text"
-                                    value={contactNumber}
-                                    onChange={(e) => setContactNumber(e.target.value)}
-                                    placeholder="+254..."
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        fontSize: '1rem',
-                                    }}
-                                />
-                            </div>
-
-                            <div style={{ gridColumn: '1 / -1' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>
-                                    Processing Location
-                                </label>
-                                <input
-                                    type="text"
-                                    value={processingLocation}
-                                    onChange={(e) => setProcessingLocation(e.target.value)}
-                                    placeholder="Physical Address"
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        fontSize: '1rem',
-                                    }}
-                                />
-
-                                <div style={{ marginTop: '10px', fontSize: '0.9rem', color: '#666', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <input
-                                        type="checkbox"
-                                        id="diffLocationCheck"
-                                        checked={diffLocation}
-                                        onChange={(e) => setDiffLocation(e.target.checked)}
-                                    />
-                                    <label htmlFor="diffLocationCheck" style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>
-                                        Delivery location is different from processing point?
-                                    </label>
-                                </div>
-                            </div>
-
-                            {diffLocation && (
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#FFD700' }}>
-                                        Delivery Location
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={deliveryLocation}
-                                        onChange={(e) => setDeliveryLocation(e.target.value)}
-                                        placeholder="Enter dispatch address"
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '4px',
-                                            fontSize: '1rem',
-                                        }}
-                                    />
-                                </div>
-                            )}
-
-                            <div style={{ gridColumn: '1 / -1' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>
-                                    License & Documents
-                                </label>
-                                <div style={{
-                                    border: '2px dashed #ccc',
-                                    padding: '1.5rem',
-                                    textAlign: 'center',
-                                    borderRadius: '4px',
-                                    background: '#fafafa',
-                                    cursor: 'pointer',
-                                }}>
-                                    Click to upload Business License (PDF/JPG)
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 2: Print Configuration */}
-                    <div style={{ padding: '2rem', borderBottom: '1px solid #e0e0e0' }}>
-                        <div style={{
-                            fontSize: '1.1rem',
-                            fontWeight: 'bold',
-                            marginBottom: '1.5rem',
-                            color: '#1a1a1a',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                        }}>
-                            <span style={{
-                                background: '#FFD700',
-                                color: '#1a1a1a',
-                                width: '24px',
-                                height: '24px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '50%',
-                                fontSize: '0.8rem',
-                            }}>2</span>
-                            Print Configuration
-                        </div>
-
-                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '20px' }}>
-                            Please provide clear pricing for each item variant.
-                        </p>
-
-                        {/* Materials Table */}
-                        <label style={{ marginTop: '20px', display: 'block', marginBottom: '10px', fontSize: '0.9rem', fontWeight: 600 }}>
-                            Print Options (Materials) <span style={{ color: 'red' }}>*</span>
-                        </label>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr>
-                                    <th style={{ textAlign: 'left', color: '#888', fontSize: '0.85rem', paddingBottom: '10px', width: '40%' }}>Material</th>
-                                    <th style={{ textAlign: 'left', color: '#888', fontSize: '0.85rem', paddingBottom: '10px' }}>Available?</th>
-                                    <th style={{ textAlign: 'left', color: '#888', fontSize: '0.85rem', paddingBottom: '10px' }}>Base Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {materials.map((material, index) => (
-                                    <tr key={index}>
-                                        <td style={{ padding: '8px 0' }}>{material.name}</td>
-                                        <td style={{ padding: '8px 0' }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={material.available}
-                                                onChange={(e) => handleMaterialChange(index, 'available', e.target.checked)}
-                                            />
-                                        </td>
-                                        <td style={{ padding: '8px 0' }}>
-                                            <input
-                                                type="number"
-                                                value={material.basePrice || ''}
-                                                onChange={(e) => handleMaterialChange(index, 'basePrice', parseFloat(e.target.value) || 0)}
-                                                placeholder="0.00"
-                                                style={{ width: '100px', marginLeft: '10px', padding: '5px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-
-                        <hr style={{ border: 0, borderTop: '1px dashed #ddd', margin: '30px 0' }} />
-
-                        {/* Sizes */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <label style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>
-                                Sizes Available <span style={{ color: 'red' }}>*</span>
-                            </label>
-                            <div style={{ display: 'flex' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setUnit('in')}
-                                    style={{
-                                        padding: '5px 15px',
-                                        border: '1px solid #ccc',
-                                        background: unit === 'in' ? '#1a1a1a' : '#fff',
-                                        color: unit === 'in' ? '#FFD700' : '#000',
-                                        cursor: 'pointer',
-                                        fontSize: '0.85rem',
-                                    }}
-                                >
-                                    IN
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setUnit('cm')}
-                                    style={{
-                                        padding: '5px 15px',
-                                        border: '1px solid #ccc',
-                                        background: unit === 'cm' ? '#1a1a1a' : '#fff',
-                                        color: unit === 'cm' ? '#FFD700' : '#000',
-                                        cursor: 'pointer',
-                                        fontSize: '0.85rem',
-                                    }}
-                                >
-                                    CM
-                                </button>
-                            </div>
-                        </div>
-
-                        {sizes.map((size, index) => (
-                            <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '10px' }}>
-                                <div style={{ flex: 1 }}>
-                                    {index === 0 && (
-                                        <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '5px' }}>
-                                            Width ({unit})
-                                        </label>
-                                    )}
-                                    <input
-                                        type="number"
-                                        value={size.width || ''}
-                                        onChange={(e) => handleSizeChange(index, 'width', parseFloat(e.target.value) || 0)}
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    />
-                                </div>
-                                <div style={{ paddingBottom: '10px' }}>by</div>
-                                <div style={{ flex: 1 }}>
-                                    {index === 0 && (
-                                        <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '5px' }}>
-                                            Height ({unit})
-                                        </label>
-                                    )}
-                                    <input
-                                        type="number"
-                                        value={size.height || ''}
-                                        onChange={(e) => handleSizeChange(index, 'height', parseFloat(e.target.value) || 0)}
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    {index === 0 && (
-                                        <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '5px' }}>
-                                            Price Add-on
-                                        </label>
-                                    )}
-                                    <input
-                                        type="number"
-                                        value={size.priceAddon || ''}
-                                        onChange={(e) => handleSizeChange(index, 'priceAddon', parseFloat(e.target.value) || 0)}
-                                        placeholder="0.00"
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-
+                {/* Tab Navigation */}
+                <div style={{
+                    borderBottom: '2px solid #e0e0e0',
+                    background: '#fafafa',
+                    display: 'flex',
+                    gap: '0',
+                }}>
+                    {[
+                        { id: 'profile', label: 'Shop Profile' },
+                        { id: 'services', label: 'Services' },
+                        { id: 'pricing', label: 'Pricing' },
+                    ].map((tab) => (
                         <button
-                            type="button"
-                            onClick={addSizeRow}
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
                             style={{
-                                background: 'none',
+                                padding: '1rem 2rem',
                                 border: 'none',
-                                color: '#1a1a1a',
-                                textDecoration: 'underline',
+                                background: activeTab === tab.id ? '#fff' : 'transparent',
+                                borderBottom: activeTab === tab.id ? '3px solid #FFD700' : '3px solid transparent',
+                                color: activeTab === tab.id ? '#1a1a1a' : '#666',
+                                fontWeight: activeTab === tab.id ? 'bold' : 'normal',
                                 cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                marginTop: '10px',
+                                fontSize: '0.95rem',
+                                transition: 'all 0.2s',
                             }}
                         >
-                            + Add another size
+                            {tab.label}
                         </button>
+                    ))}
+                </div>
+
+                {/* Tab Content */}
+                {loading ? (
+                    <div style={{ padding: '3rem', textAlign: 'center' }}>
+                        <p>Loading...</p>
                     </div>
+                ) : (
+                    <>
+                        {/* Profile Tab */}
+                        {activeTab === 'profile' && (
+                            <form onSubmit={handleSaveProfile} style={{ padding: '2rem' }}>
+                                <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Shop Information</h3>
 
-                    {/* Section 3: Framing Options */}
-                    <div style={{ padding: '2rem', borderBottom: '1px solid #e0e0e0' }}>
-                        <div style={{
-                            fontSize: '1.1rem',
-                            fontWeight: 'bold',
-                            marginBottom: '1.5rem',
-                            color: '#1a1a1a',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                        }}>
-                            <span style={{
-                                background: '#FFD700',
-                                color: '#1a1a1a',
-                                width: '24px',
-                                height: '24px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '50%',
-                                fontSize: '0.8rem',
-                            }}>3</span>
-                            Framing Options
-                        </div>
-
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>
-                                Upload Frame Designs
-                            </label>
-                            <div style={{
-                                border: '2px dashed #ccc',
-                                padding: '1rem',
-                                textAlign: 'center',
-                                borderRadius: '4px',
-                                background: '#fafafa',
-                                cursor: 'pointer',
-                            }}>
-                                Drag & Drop Frame Profiles here
-                            </div>
-                        </div>
-
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                            gap: '1rem',
-                        }}>
-                            {frames.map((frame, index) => (
-                                <div key={frame.id} style={{ border: '1px solid #eee', padding: '10px', borderRadius: '4px', textAlign: 'center' }}>
-                                    <div style={{
-                                        height: '80px',
-                                        background: '#eee',
-                                        marginBottom: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '0.8rem',
-                                        color: '#999',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                    }}>
-                                        <Skeleton style={{ width: '100%', height: '100%', position: 'absolute' }} />
-                                        <span style={{ position: 'relative', zIndex: 1 }}>Design {index + 1}</span>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                                            Business Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            required
+                                            placeholder="e.g. Nairobi Art House"
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '1rem',
+                                            }}
+                                        />
                                     </div>
-                                    <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '5px' }}>
-                                        Design ID: {frame.designId}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={frame.price || ''}
-                                        onChange={(e) => handleFrameChange(index, 'price', parseFloat(e.target.value) || 0)}
-                                        placeholder="Price"
-                                        style={{
-                                            marginTop: '5px',
-                                            textAlign: 'center',
-                                            width: '100%',
-                                            padding: '5px',
-                                            border: '1px solid #ccc',
-                                            borderRadius: '4px',
-                                        }}
-                                    />
-                                    <div style={{ marginTop: '5px', textAlign: 'left', fontSize: '0.75rem' }}>
+
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                                            Email *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={formData.contactEmail}
+                                            onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                                            required
+                                            placeholder="contact@shop.com"
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '1rem',
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                                            Contact Number *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.contactPhone}
+                                            onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                                            required
+                                            placeholder="+254..."
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '1rem',
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                                            Location *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.location}
+                                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                            required
+                                            placeholder="Physical Address"
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '1rem',
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+                                            Description
+                                        </label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            placeholder="Describe your print shop..."
+                                            rows={4}
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '1rem',
+                                                fontFamily: 'inherit',
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <input
                                             type="checkbox"
-                                            checked={frame.sameColor}
-                                            onChange={(e) => handleFrameChange(index, 'sameColor', e.target.checked)}
+                                            id="shopActive"
+                                            checked={formData.isActive}
+                                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                                         />
-                                        {' '}Same colour
+                                        <label htmlFor="shopActive" style={{ margin: 0, fontSize: '0.9rem' }}>
+                                            Shop is active and accepting orders
+                                        </label>
                                     </div>
                                 </div>
-                            ))}
 
-                            {/* Glass Option */}
-                            <div style={{ border: '1px solid #eee', padding: '10px', borderRadius: '4px', textAlign: 'center' }}>
-                                <div style={{
-                                    height: '80px',
-                                    background: '#eee',
-                                    marginBottom: '10px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '0.8rem',
-                                    color: '#999',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                }}>
-                                    <Skeleton style={{ width: '100%', height: '100%', position: 'absolute' }} />
-                                    <span style={{ position: 'relative', zIndex: 1 }}>Glass Opt.</span>
+                                <div style={{ marginTop: '2rem' }}>
+                                    <Button type="submit" style={{ background: '#1a1a1a', color: '#FFD700' }}>
+                                        {shopExists ? 'Update Profile' : 'Create Shop Profile'}
+                                    </Button>
                                 </div>
-                                <label style={{ fontSize: '0.8rem', display: 'block', marginBottom: '5px' }}>
-                                    Without Glass
-                                </label>
-                                <input
-                                    type="number"
-                                    value={glassDiscount || ''}
-                                    onChange={(e) => setGlassDiscount(parseFloat(e.target.value) || 0)}
-                                    placeholder="Discount?"
-                                    style={{
-                                        marginTop: '5px',
-                                        textAlign: 'center',
-                                        width: '100%',
-                                        padding: '5px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                            </form>
+                        )}
 
-                    {/* Footer */}
-                    <div style={{
-                        padding: '2rem',
-                        background: '#fafafa',
-                        borderTop: '1px solid #e0e0e0',
-                        textAlign: 'right',
-                    }}>
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            style={{
-                                background: saving ? '#4caf50' : '#1a1a1a',
-                                color: '#FFD700',
-                                border: 'none',
-                                padding: '12px 30px',
-                                fontSize: '1rem',
-                                fontWeight: 'bold',
-                                borderRadius: '4px',
-                                cursor: saving ? 'not-allowed' : 'pointer',
-                            }}
-                        >
-                            {saving ? 'SAVING...' : 'SAVE CONFIGURATION'}
-                        </button>
-                    </div>
-                </form>
+                        {/* Services Tab */}
+                        {activeTab === 'services' && (
+                            <ServiceManager />
+                        )}
+
+                        {/* Pricing Tab */}
+                        {activeTab === 'pricing' && (
+                            <PricingMatrixEditor services={services} />
+                        )}
+                    </>
+                )}
             </div>
 
-            {/* Footer */}
             <Footer />
         </div>
     );
