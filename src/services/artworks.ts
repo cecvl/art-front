@@ -17,5 +17,16 @@ export async function fetchArtworks(): Promise<Artwork[]> {
     throw new Error("Failed to fetch artworks");
   }
 
-  return res.json();
+  const data = await res.json();
+
+  // Transform API response to match our interface
+  return data.map((artwork: any) => ({
+    id: artwork.ArtworkID || artwork.id,
+    title: artwork.Title || artwork.title || '',
+    description: artwork.Description || artwork.description || '',
+    imageUrl: artwork.ImageURL || artwork.imageUrl || '',
+    artistId: artwork.ArtistID || artwork.artistId || '',
+    createdAt: artwork.CreatedAt || artwork.createdAt || '',
+    isAvailable: artwork.IsAvailable !== undefined ? artwork.IsAvailable : true,
+  }));
 }
