@@ -118,6 +118,7 @@ const ArtGrid: React.FC<{
             key={item.id}
             image={item.imageUrl}
             title={item.title}
+            description={item.description}
             onClick={() => onCardClick?.(item.id)}
             onCartClick={(e) => {
               e.stopPropagation();

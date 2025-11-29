@@ -4,6 +4,7 @@ import '../../styles/ArtCard.css';
 export interface ArtCardProps {
   image: string;
   title: string;
+  description?: string;
   tags?: string[];
   price?: number; // Price in KES
   onClick?: () => void;
@@ -18,6 +19,7 @@ export interface ArtCardProps {
 const ArtCard: React.FC<ArtCardProps> = ({
   image,
   title,
+  description,
   tags = [],
   price,
   onClick,
@@ -28,6 +30,9 @@ const ArtCard: React.FC<ArtCardProps> = ({
   isInCart = false,
 }) => {
   const [showLightbox, setShowLightbox] = useState(false);
+
+  // Debug: log what we're receiving
+  console.log('ArtCard props:', { title, description, image });
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't trigger card click if cart icon was clicked
@@ -87,6 +92,11 @@ const ArtCard: React.FC<ArtCardProps> = ({
         </div>
         <div className="art-card-content">
           <div className="art-card-title">{title}</div>
+          {description && (
+            <div className="art-card-description">
+              {description.length > 80 ? description.substring(0, 80) + '...' : description}
+            </div>
+          )}
           {tags.length > 0 && (
             <div className="art-card-tags">
               {tags.map((tag, index) => (

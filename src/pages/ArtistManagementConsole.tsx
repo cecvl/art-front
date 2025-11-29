@@ -450,33 +450,62 @@ const ArtistManagementConsole = () => {
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.transform = 'scale(1.02)';
                                                 e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-                                                const overlay = e.currentTarget.querySelector('.edit-overlay') as HTMLElement;
-                                                if (overlay) overlay.style.opacity = '1';
+                                                const description = e.currentTarget.querySelector('.description-text') as HTMLElement;
+                                                if (description) {
+                                                    description.style.opacity = '1';
+                                                    description.style.maxHeight = '100px';
+                                                }
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.transform = 'scale(1)';
                                                 e.currentTarget.style.boxShadow = 'none';
-                                                const overlay = e.currentTarget.querySelector('.edit-overlay') as HTMLElement;
-                                                if (overlay) overlay.style.opacity = '0';
+                                                const overlay = e.currentTarget.querySelector('.description-text') as HTMLElement;
+                                                if (overlay) {
+                                                    overlay.style.opacity = '0';
+                                                    overlay.style.maxHeight = '0';
+                                                }
                                             }}
                                         >
+                                            {/* Title Overlay - Always Visible */}
                                             <div
-                                                className="edit-overlay"
                                                 style={{
                                                     position: 'absolute',
                                                     bottom: 0,
                                                     left: 0,
                                                     right: 0,
-                                                    background: 'rgba(0,0,0,0.6)',
+                                                    background: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent)',
                                                     color: '#fff',
-                                                    fontSize: '0.7rem',
-                                                    textAlign: 'center',
-                                                    padding: '4px',
-                                                    opacity: 0,
-                                                    transition: 'opacity 0.2s',
+                                                    padding: '12px 8px 8px 8px',
+                                                    transition: 'all 0.2s',
                                                 }}
                                             >
-                                                {artwork.title}
+                                                <div style={{
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 600,
+                                                    marginBottom: '4px',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                }}>
+                                                    {artwork.title}
+                                                </div>
+                                                {artwork.description && (
+                                                    <div
+                                                        className="description-text"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                            opacity: 0,
+                                                            maxHeight: 0,
+                                                            overflow: 'hidden',
+                                                            transition: 'opacity 0.2s, max-height 0.2s',
+                                                            color: '#ddd',
+                                                        }}
+                                                    >
+                                                        {artwork.description.length > 60
+                                                            ? artwork.description.substring(0, 60) + '...'
+                                                            : artwork.description}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
