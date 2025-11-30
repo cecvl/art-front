@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import RoleProtectedRoute from "./components/auth/RoleProtectedRoute";
 import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -47,17 +48,17 @@ function App() {
             <Route
               path="/artist-console"
               element={
-                <ProtectedRoute>
+                <RoleProtectedRoute allowedRoles={['artist']}>
                   <ArtistManagementConsole />
-                </ProtectedRoute>
+                </RoleProtectedRoute>
               }
             />
             <Route
               path="/print-shop"
               element={
-                <ProtectedRoute>
+                <RoleProtectedRoute allowedRoles={['printShop']}>
                   <PrintShop />
-                </ProtectedRoute>
+                </RoleProtectedRoute>
               }
             />
           </Routes>

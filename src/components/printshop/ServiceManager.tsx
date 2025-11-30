@@ -14,7 +14,7 @@ const ServiceManager = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        technologyType: '',
+        technology: '',
         basePrice: 0,
         isActive: true,
     });
@@ -27,9 +27,10 @@ const ServiceManager = () => {
         try {
             setLoading(true);
             const data = await printShopService.getServices();
-            setServices(data);
+            setServices(data || []); // Ensure it's always an array
         } catch (error: any) {
             console.error('Failed to load services:', error);
+            setServices([]); // Set empty array on error
             toast.error(error.message || 'Failed to load services');
         } finally {
             setLoading(false);
@@ -40,11 +41,24 @@ const ServiceManager = () => {
         e.preventDefault();
 
         try {
+            // Prepare service data with initialized PriceMatrix
+            const serviceData = {
+                ...formData,
+                priceMatrix: {
+                    sizeModifiers: {},
+                    quantityTiers: [],
+                    materialMarkups: {},
+                    mediumMarkups: {},
+                    framePrices: {},
+                    rushOrderFee: 0,
+                },
+            };
+
             if (editingService) {
-                await printShopService.updateService(editingService.id, formData);
+                await printShopService.updateService(editingService.id, serviceData);
                 toast.success('Service updated successfully');
             } else {
-                await printShopService.createService(formData);
+                await printShopService.createService(serviceData);
                 toast.success('Service created successfully');
             }
 
@@ -61,7 +75,7 @@ const ServiceManager = () => {
         setFormData({
             name: service.name,
             description: service.description,
-            technologyType: service.technologyType,
+            technology: service.technology,
             basePrice: service.basePrice,
             isActive: service.isActive,
         });
@@ -98,7 +112,7 @@ const ServiceManager = () => {
         setFormData({
             name: '',
             description: '',
-            technologyType: '',
+            technology: '',
             basePrice: 0,
             isActive: true,
         });
@@ -171,12 +185,12 @@ const ServiceManager = () => {
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
-                                    Technology Type *
+                                    Technology *
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.technologyType}
-                                    onChange={(e) => setFormData({ ...formData, technologyType: e.target.value })}
+                                    value={formData.technology}
+                                    onChange={(e) => setFormData({ ...formData, technology: e.target.value })}
                                     placeholder="e.g., Digital, Giclée"
                                     required
                                     style={{
@@ -259,7 +273,7 @@ const ServiceManager = () => {
             )}
 
             {/* Services List */}
-            {services.length === 0 ? (
+            {!services || services.length === 0 ? (
                 <div style={{
                     textAlign: 'center',
                     padding: '3rem',
@@ -322,7 +336,7 @@ const ServiceManager = () => {
                                 color: '#888',
                                 marginBottom: '1rem',
                             }}>
-                                <div>Technology: <strong>{service.technologyType}</strong></div>
+                                <div>Technology: <strong>{service.technology}</strong></div>
                                 <div>Base Price: <strong>KES {service.basePrice.toLocaleString()}</strong></div>
                             </div>
 

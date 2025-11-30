@@ -12,6 +12,60 @@ import type {
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 // ============================================
+// Helper Functions for Data Transformation
+// ============================================
+
+// Form data interface for easier form handling
+export interface ShopProfileFormData {
+    name: string;
+    description?: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    email: string;
+    phone: string;
+    website?: string;
+    isActive: boolean;
+}
+
+// Transform flat form data to nested backend structure
+const transformFormToBackend = (formData: ShopProfileFormData): Omit<PrintShop, 'id' | 'ownerId' | 'createdAt' | 'rating'> => {
+    return {
+        name: formData.name,
+        description: formData.description || '',
+        location: {
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            country: formData.country,
+        },
+        contact: {
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website || '',
+        },
+        isActive: formData.isActive,
+    };
+};
+
+// Transform nested backend data to flat form structure
+export const transformBackendToForm = (shop: PrintShop): ShopProfileFormData => {
+    return {
+        name: shop.name,
+        description: shop.description || '',
+        address: shop.location.address,
+        city: shop.location.city,
+        state: shop.location.state,
+        country: shop.location.country,
+        email: shop.contact.email,
+        phone: shop.contact.phone,
+        website: shop.contact.website || '',
+        isActive: shop.isActive,
+    };
+};
+
+// ============================================
 // Shop Profile APIs
 // ============================================
 
@@ -31,13 +85,15 @@ export const getShopProfile = async (): Promise<PrintShop> => {
 };
 
 export const createShopProfile = async (
-    data: Omit<PrintShop, 'id' | 'ownerId' | 'createdAt' | 'rating'>
+    formData: ShopProfileFormData
 ): Promise<PrintShop> => {
+    const backendData = transformFormToBackend(formData);
+
     const res = await fetch(`${API_BASE}/printshop/profile/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify(backendData),
     });
 
     if (!res.ok) {
@@ -48,12 +104,14 @@ export const createShopProfile = async (
     return res.json();
 };
 
-export const updateShopProfile = async (data: Partial<PrintShop>): Promise<PrintShop> => {
+export const updateShopProfile = async (formData: ShopProfileFormData): Promise<PrintShop> => {
+    const backendData = transformFormToBackend(formData);
+
     const res = await fetch(`${API_BASE}/printshop/profile/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify(backendData),
     });
 
     if (!res.ok) {

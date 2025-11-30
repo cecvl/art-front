@@ -20,6 +20,7 @@ export interface User {
     email: string | null;
     displayName: string | null;
     photoURL: string | null;
+    roles?: string[];  // User roles: ['buyer', 'artist', 'printShop']
 }
 
 // Auth state interface
@@ -53,13 +54,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Convert Firebase User to our User interface
-    const convertFirebaseUser = (firebaseUser: FirebaseUser): User => ({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL,
-    });
+    // Convert Firebase User to our User interface with roles from Firestore
+    const convertFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
+        try {
+            // Fetch user document from Firestore to get roles
+            const { getFirestore, doc, getDoc } = await import('firebase/firestore');
+            const db = getFirestore();
+            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+            const userData = userDoc.data();
+
+            return {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                photoURL: firebaseUser.photoURL,
+                roles: userData?.roles || [],
+            };
+        } catch (error) {
+            console.error('Failed to fetch user roles:', error);
+            // Return user without roles if fetch fails
+            return {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                photoURL: firebaseUser.photoURL,
+                roles: [],
+            };
+        }
+    };
 
     // Create session cookie on backend
     const createSession = async (idToken: string): Promise<void> => {
@@ -93,6 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         email: data.user.email || null,
                         displayName: data.user.displayName || data.user.name || null,
                         photoURL: data.user.photoURL || null,
+                        roles: data.user.roles || [],
                     };
                 }
             }
@@ -122,12 +145,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         console.log('Creating new backend session...');
                         const idToken = await firebaseUser.getIdToken();
                         await createSession(idToken);
-                        setUser(convertFirebaseUser(firebaseUser));
+                        const userWithRoles = await convertFirebaseUser(firebaseUser);
+                        setUser(userWithRoles);
                     }
                 } catch (error) {
                     console.error('Session sync failed:', error);
                     // If session creation fails, still set user from Firebase
-                    setUser(convertFirebaseUser(firebaseUser));
+                    const userWithRoles = await convertFirebaseUser(firebaseUser);
+                    setUser(userWithRoles);
                 }
             } else {
                 // User is signed out
@@ -154,7 +179,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await createSession(idToken);
 
             // Set user state
-            setUser(convertFirebaseUser(credential.user));
+            const userWithRoles = await convertFirebaseUser(credential.user);
+            setUser(userWithRoles);
         } catch (err: any) {
             console.error('Login error:', err);
 
@@ -191,7 +217,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await createSession(idToken);
 
             // Set user state
-            setUser(convertFirebaseUser(result.user));
+            const userWithRoles = await convertFirebaseUser(result.user);
+            setUser(userWithRoles);
         } catch (err: any) {
             console.error('Google login error:', err);
 
