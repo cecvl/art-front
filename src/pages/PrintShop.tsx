@@ -46,6 +46,7 @@ const PrintShop = () => {
     const loadData = async () => {
         try {
             setLoading(true);
+            let hasShop = false;
 
             // Load shop profile
             try {
@@ -53,6 +54,7 @@ const PrintShop = () => {
                 setShopProfile(profile);
                 setShopExists(true);
                 setFormData(transformBackendToForm(profile));
+                hasShop = true; // Use local variable for immediate check
             } catch (error: any) {
                 // Shop not found is expected for first-time users
                 console.log('Shop profile not found - first time setup');
@@ -61,10 +63,10 @@ const PrintShop = () => {
             }
 
             // Load services (only if shop exists)
-            if (shopExists) {
+            if (hasShop) {
                 try {
                     const servicesData = await printShopService.getServices();
-                    setServices(servicesData);
+                    setServices(servicesData || []);
                 } catch (error) {
                     console.error('Failed to load services:', error);
                     setServices([]);
