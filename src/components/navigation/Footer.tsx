@@ -1,5 +1,5 @@
 import React from "react";
-import ArtPrintLogo from "../../assets/ArtPrint Logo.png";
+import ArtPrintLogo from "../../assets/PaaJuuPrints.svg";
 
 const Footer: React.FC = () => {
     return (
@@ -30,8 +30,8 @@ const Footer: React.FC = () => {
             >
                 <img
                     src={ArtPrintLogo}
-                    alt="ArtPrint Logo"
-                    style={{ height: 46, marginLeft: 24 }}
+                    alt="PaaJuu Prints Logo"
+                    style={{ height: 140, marginLeft: 24 }}
                 />
             </div>
 

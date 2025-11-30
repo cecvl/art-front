@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import ArtPrintLogo from '../assets/ArtPrint Logo.png';
+import ArtPrintLogo from '../assets/PaaJuuPrints.svg';
 import { Button } from '../components/ui/button';
 import Footer from '../components/navigation/Footer';
 import ServiceManager from '../components/printshop/ServiceManager';
@@ -105,14 +105,15 @@ const PrintShop = () => {
     });
 
     return (
-        <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '50px' }}>
+        <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
             <header className="sticky top-0 z-50 flex items-center border-b border-gray-200 bg-gray-50 px-3 py-3 sm:px-4">
                 <div className="flex flex-none items-center min-w-[62px]">
                     <img
                         src={ArtPrintLogo}
-                        alt="ArtPrint Logo"
-                        className="ml-1 mr-6 h-11 w-auto cursor-pointer transition-opacity hover:opacity-80"
+                        alt="PaaJuu Prints Logo"
+                        className="ml-1 mr-6 cursor-pointer transition-opacity hover:opacity-80"
+                        style={{ height: 80, width: 'auto' }}
                         onClick={() => navigate('/')}
                     />
                 </div>
@@ -139,12 +140,12 @@ const PrintShop = () => {
 
             {/* Main Container */}
             <div style={{
-                maxWidth: '1200px',
-                margin: '2rem auto',
+                margin: '2rem 3rem',
                 background: '#ffffff',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                 borderRadius: '8px',
                 overflow: 'hidden',
+                flex: 1,
             }}>
                 {/* Console Header */}
                 <div style={{

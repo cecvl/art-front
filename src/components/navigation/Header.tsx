@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
+import ArtPrintLogo from '../../assets/PaaJuuPrints.svg';
 import { Button } from "../ui/button";
 import UserMenu from "./UserMenu";
 import LoginModal from "../features/auth/LoginModal";
@@ -76,8 +76,9 @@ const Header: React.FC<{
         <div className="flex flex-none items-center min-w-[62px]">
           <img
             src={ArtPrintLogo}
-            alt="ArtPrint Logo"
-            className="ml-1 mr-6 h-11 w-auto cursor-pointer transition-opacity hover:opacity-80"
+            alt="PaaJuu Prints Logo"
+            className="ml-1 mr-6 cursor-pointer transition-opacity hover:opacity-80"
+            style={{ height: 80, width: 'auto' }}
             onClick={onHomeClick}
           />
         </div>
