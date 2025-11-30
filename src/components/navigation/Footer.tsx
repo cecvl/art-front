@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
             </div>
 
             <div style={{ flex: 1, textAlign: "right", paddingRight: 24 }}>
-                ©25 ArtPrint — All rights reserved
+                ©25 PAAJUU PRINTS — All rights reserved
             </div>
         </footer>
     );

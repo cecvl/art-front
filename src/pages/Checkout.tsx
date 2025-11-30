@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import ArtPrintLogo from '../assets/ArtPrint Logo.png';
+import ArtPrintLogo from '../assets/PaaJuuPrints.svg';
 import { Button } from '../components/ui/button';
 
 const Checkout = () => {

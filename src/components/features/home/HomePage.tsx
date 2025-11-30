@@ -36,7 +36,7 @@ const Hero: React.FC = () => {
           lineHeight: 1,
         }}
       >
-        Where Art Meets Creativity
+        Art for Every Space. Where Creativty Meets Collectors.
       </h1>
 
       <div

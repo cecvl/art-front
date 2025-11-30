@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getProfile, updateProfile, uploadArtwork, type UserProfile } from '../services/artists';
-import ArtPrintLogo from '../assets/ArtPrint Logo.png';
+import ArtPrintLogo from '../assets/PaaJuuPrints.svg';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import Footer from '../components/navigation/Footer';

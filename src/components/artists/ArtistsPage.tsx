@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "../navigation/Header";
 import { fetchArtists, type Artist } from "../../services/artists";
-import ArtPrintLogo from '../../assets/ArtPrint Logo.png';
+import ArtPrintLogo from '../../assets/PaaJuuPrints.svg';
 
 // Artist Card Component for Masonry
 const ArtistCard: React.FC<{ artist: Artist; onClick: () => void }> = ({ artist, onClick }) => {
