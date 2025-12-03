@@ -156,14 +156,6 @@ const HomePage: React.FC<{
       fetchArtworks().then((data) => setBackendArtworks(data));
     }, []);
 
-    // Reactive layout for responsive styles
-    const [, forceUpdate] = useState(0);
-    useEffect(() => {
-      const handleResize = () => forceUpdate((n) => n + 1);
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
     return (
       <div
         style={{

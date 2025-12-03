@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
+import Logo from "@/assets/PaaJuuPrints.svg"
 
 export function LoginForm({
   className,
@@ -82,7 +83,10 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <img src={Logo} alt="PaaJuu Prints" className="h-32 w-auto" />
+          </div>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
@@ -113,9 +117,9 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input 
-                  id="password" 
-                  type="password" 
+                <Input
+                  id="password"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -125,9 +129,9 @@ export function LoginForm({
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
               </Button>
-              <Button 
-                variant="outline" 
-                className="w-full" 
+              <Button
+                variant="outline"
+                className="w-full"
                 type="button"
                 onClick={handleGoogleClick}
                 disabled={loading}
