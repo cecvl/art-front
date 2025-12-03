@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import ArtPrintLogo from "../../assets/PaaJuuPrints.svg";
 
 const Footer: React.FC = () => {
@@ -17,7 +18,62 @@ const Footer: React.FC = () => {
             }}
         >
             <div style={{ flex: 2, textAlign: "center", fontSize: 16 }}>
-                THE ESSENCE OF ART
+                <ul style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "12px"
+                }}>
+                    <li>
+                        <Link
+                            to="/"
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            style={{
+                                textDecoration: "none",
+                                color: "#111",
+                                fontWeight: 500,
+                                transition: "color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = "#666"}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "#111"}
+                        >
+                            Home
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to="/contacts"
+                            style={{
+                                textDecoration: "none",
+                                color: "#111",
+                                fontWeight: 500,
+                                transition: "color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = "#666"}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "#111"}
+                        >
+                            Contacts
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to="/about"
+                            style={{
+                                textDecoration: "none",
+                                color: "#111",
+                                fontWeight: 500,
+                                transition: "color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = "#666"}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "#111"}
+                        >
+                            About
+                        </Link>
+                    </li>
+                </ul>
             </div>
 
             <div

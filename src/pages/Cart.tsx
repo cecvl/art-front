@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import CartComponent from '../components/features/cart/Cart';
 import ProductDetail from '../components/artworks/ProductDetail';
+import Footer from '../components/navigation/Footer';
 
 export default function Cart() {
     const navigate = useNavigate();
@@ -35,27 +36,30 @@ export default function Cart() {
     };
 
     return (
-        <>
-            <CartComponent
-                cartItems={cartItems}
-                onStartShopping={() => navigate('/')}
-                onRemoveItem={removeFromCart}
-                onUpdateQuantity={updateQuantity}
-                onBack={() => navigate(-1)}
-                onCheckout={() => navigate('/checkout')}
-                onEditItem={handleEditItem}
-            />
-            {editingItemId !== null && (
-                <ProductDetail
-                    artItemId={editingArtId}
-                    onAddToCart={handleUpdateItem}
-                    onNavigateToCart={() => {
-                        setEditingItemId(null);
-                        setEditingArtId(null);
-                    }}
-                    hideHeader={true}
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <div style={{ flex: 1 }}>
+                <CartComponent
+                    cartItems={cartItems}
+                    onStartShopping={() => navigate('/')}
+                    onRemoveItem={removeFromCart}
+                    onUpdateQuantity={updateQuantity}
+                    onBack={() => navigate(-1)}
+                    onCheckout={() => navigate('/checkout')}
+                    onEditItem={handleEditItem}
                 />
-            )}
-        </>
+                {editingItemId !== null && (
+                    <ProductDetail
+                        artItemId={editingArtId}
+                        onAddToCart={handleUpdateItem}
+                        onNavigateToCart={() => {
+                            setEditingItemId(null);
+                            setEditingArtId(null);
+                        }}
+                        hideHeader={true}
+                    />
+                )}
+            </div>
+            <Footer />
+        </div>
     );
 }
