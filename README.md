@@ -222,18 +222,6 @@ npm run preview
 
 The application uses Vite's environment variable system. All variables must be prefixed with `VITE_` to be accessible in the client-side code.
 
-### Required Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:8080` |
-| `VITE_FIREBASE_API_KEY` | Firebase API key | `AIza...` |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase auth domain | `project.firebaseapp.com` |
-| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID | `my-project-123` |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | `project.appspot.com` |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID | `123456789` |
-| `VITE_FIREBASE_APP_ID` | Firebase app ID | `1:123:web:abc` |
-
 ### Accessing Environment Variables
 
 ```typescript
