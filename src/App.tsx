@@ -9,6 +9,8 @@ import Checkout from "./pages/Checkout";
 import ArtistManagementConsole from "./pages/ArtistManagementConsole";
 import PrintShop from "./pages/PrintShop";
 import Artists from "./pages/Artists";
+import Orders from "./pages/Orders";
+import PaymentStatus from "./pages/PaymentStatus";
 import { Toaster } from './components/ui/sonner';
 
 function App() {
@@ -59,6 +61,22 @@ function App() {
                 <RoleProtectedRoute allowedRoles={['printShop']}>
                   <PrintShop />
                 </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment-status/:paymentId"
+              element={
+                <ProtectedRoute>
+                  <PaymentStatus />
+                </ProtectedRoute>
               }
             />
           </Routes>

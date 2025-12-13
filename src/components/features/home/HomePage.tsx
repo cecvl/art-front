@@ -30,53 +30,29 @@ const Hero: React.FC = () => {
     >
       <h1
         style={{
-          fontSize: isSmall ? 36 : "4vw",
-          fontWeight: 1400,
+          fontSize: isSmall ? 48 : "6vw",
+          fontWeight: 700,
           letterSpacing: -2,
-          lineHeight: 1,
+          lineHeight: 1.1,
+          marginBottom: 20,
         }}
       >
         Art for Every Space. Where Creativty Meets Collectors.
       </h1>
 
-      <div
+      <h2
         style={{
-          borderRadius: 12,
-          overflow: "hidden",
-          background: "#f3f4f6",
-          width: "100%",
-          minHeight: 140,
-          position: "relative",
+          fontSize: isSmall ? 16 : "1.5vw",
+          fontWeight: 400,
+          color: "#666",
+          lineHeight: 1.6,
+          maxWidth: 800,
+          margin: "0 auto",
+          padding: "0 20px",
         }}
       >
-        <img
-          src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=960&q=80"
-          style={{
-            width: "100%",
-            objectFit: "cover",
-            height: isSmall ? 180 : 360,
-            display: "block",
-          }}
-          alt="Splash art"
-        />
-
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: isSmall ? 10 : 32,
-            color: "#fff",
-            fontSize: isSmall ? 15 : 22,
-            textShadow: "0 2px 12px #0009",
-            background: "linear-gradient(to top, rgba(0,0,0,0.6) 50%, transparent)",
-            padding: isSmall ? "0 10px" : "0 32px",
-          }}
-        >
-          Art doesn't just fill a space — it defines it. Discover art that
-          reflects who you are — or who you're becoming.
-        </div>
-      </div>
+        Transform your walls with meaningful creations made by diverse artists. Find art that reflects who you are and who you love.
+      </h2>
     </section>
   );
 };
