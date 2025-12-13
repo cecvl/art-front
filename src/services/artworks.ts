@@ -1,3 +1,5 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 export interface Artwork {
   id: string;
   title: string;
@@ -9,7 +11,7 @@ export interface Artwork {
 }
 
 export async function fetchArtworks(): Promise<Artwork[]> {
-  const res = await fetch("http://localhost:3001/artworks", {
+  const res = await fetch(`${API_BASE}/artworks`, {
     credentials: "include",
   });
 
