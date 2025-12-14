@@ -9,6 +9,7 @@ import Checkout from "./pages/Checkout";
 import ArtistManagementConsole from "./pages/ArtistManagementConsole";
 import PrintShop from "./pages/PrintShop";
 import Artists from "./pages/Artists";
+import ArtistProfile from "./pages/ArtistProfile";
 import Orders from "./pages/Orders";
 import PaymentStatus from "./pages/PaymentStatus";
 import { Toaster } from './components/ui/sonner';
@@ -28,6 +29,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Artists />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/artist/:id"
+              element={
+                <ProtectedRoute>
+                  <ArtistProfile />
                 </ProtectedRoute>
               }
             />
