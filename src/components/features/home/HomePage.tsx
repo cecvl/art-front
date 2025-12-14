@@ -84,25 +84,33 @@ const ArtGrid: React.FC<{
           paddingLeft: isMedium ? 10 : 24,
           paddingRight: isMedium ? 10 : 24,
           boxSizing: "border-box",
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: isSmall ? 12 : 32,
+          columnCount: isSmall ? 1 : isMedium ? 2 : 3,
+          columnGap: isSmall ? 12 : 32,
         }}
       >
         {displayedItems.map((item) => (
-          <ArtCard
+          <div
             key={item.id}
-            image={item.imageUrl}
-            title={item.title}
-            description={item.description}
-            onClick={() => onCardClick?.(item.id)}
-            onCartClick={(e) => {
-              e.stopPropagation();
-              onCartClick?.(item.id);
+            style={{
+              breakInside: "avoid",
+              marginBottom: isSmall ? 12 : 32,
+              display: "inline-block",
+              width: "100%",
             }}
-            artId={item.id}
-            isInCart={isItemInCart?.(item.id)}
-          />
+          >
+            <ArtCard
+              image={item.imageUrl}
+              title={item.title}
+              description={item.description}
+              onClick={() => onCardClick?.(item.id)}
+              onCartClick={(e) => {
+                e.stopPropagation();
+                onCartClick?.(item.id);
+              }}
+              artId={item.id}
+              isInCart={isItemInCart?.(item.id)}
+            />
+          </div>
         ))}
       </div>
     </section>
