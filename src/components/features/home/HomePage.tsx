@@ -64,7 +64,8 @@ const ArtGrid: React.FC<{
   onCartClick?: (artId: string) => void;
   isItemInCart?: (artId: string) => boolean;
 }> = ({ artworks, onCardClick, onCartClick, isItemInCart }) => {
-  const displayedItems = artworks.slice(0, 12);
+  // Display all artworks - no limit (Pinterest-style)
+  const displayedItems = artworks;
 
   const isSmall = typeof window !== "undefined" && window.innerWidth < 600;
   const isMedium = typeof window !== "undefined" && window.innerWidth < 700;
@@ -135,9 +136,27 @@ const HomePage: React.FC<{
 }) => {
     // Backend artworks ONLY
     const [backendArtworks, setBackendArtworks] = useState<Artwork[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-      fetchArtworks().then((data) => setBackendArtworks(data));
+      const loadArtworks = async () => {
+        try {
+          setLoading(true);
+          const data = await fetchArtworks();
+          console.log('Fetched artworks:', data.length, 'items');
+          console.log('Artworks data:', data);
+          setBackendArtworks(data);
+          setError(null);
+        } catch (err) {
+          console.error('Error fetching artworks:', err);
+          setError('Failed to load artworks');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      loadArtworks();
     }, []);
 
     return (
@@ -170,12 +189,26 @@ const HomePage: React.FC<{
         >
           <Hero />
 
-          <ArtGrid
-            artworks={backendArtworks}
-            onCardClick={onCardClick}
-            onCartClick={onCartClick}
-            isItemInCart={isItemInCart}
-          />
+          {loading && (
+            <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+              Loading artworks...
+            </div>
+          )}
+
+          {error && (
+            <div style={{ textAlign: "center", padding: "40px", color: "#e53e3e" }}>
+              {error}
+            </div>
+          )}
+
+          {!loading && !error && (
+            <ArtGrid
+              artworks={backendArtworks}
+              onCardClick={onCardClick}
+              onCartClick={onCartClick}
+              isItemInCart={isItemInCart}
+            />
+          )}
         </div>
 
         {/* FOOTER */}
