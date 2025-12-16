@@ -34,7 +34,7 @@ const Orders = () => {
     const handleViewOrder = async (order: Order) => {
         setSelectedOrder(order);
         try {
-            const payments = await getPayments(order.orderId);
+            const payments = await getPayments(order.OrderID);
             setOrderPayments(payments);
         } catch (err) {
             console.error('Failed to fetch payments:', err);
@@ -174,7 +174,7 @@ const Orders = () => {
                             <div>
                                 {orders.map((order) => (
                                     <div
-                                        key={order.orderId}
+                                        key={order.OrderID}
                                         onClick={() => handleViewOrder(order)}
                                         style={{
                                             background: 'white',
@@ -182,7 +182,7 @@ const Orders = () => {
                                             padding: '1.5rem',
                                             marginBottom: '1rem',
                                             cursor: 'pointer',
-                                            border: selectedOrder?.orderId === order.orderId ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
+                                            border: selectedOrder?.OrderID === order.OrderID ? '2px solid #1a1a1a' : '1px solid #e0e0e0',
                                             transition: 'all 0.2s',
                                         }}
                                     >
@@ -194,10 +194,10 @@ const Orders = () => {
                                         }}>
                                             <div>
                                                 <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.25rem' }}>
-                                                    Order #{order.orderId.slice(0, 8)}
+                                                    Order #{order.OrderID.slice(0, 8)}
                                                 </div>
                                                 <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a1a' }}>
-                                                    KES {order.totalAmount.toLocaleString()}
+                                                    KES {order.TotalAmount.toLocaleString()}
                                                 </div>
                                             </div>
                                             <div style={{
@@ -211,27 +211,27 @@ const Orders = () => {
                                                     borderRadius: '12px',
                                                     fontSize: '0.85rem',
                                                     fontWeight: 'bold',
-                                                    background: `${getStatusColor(order.status)}20`,
-                                                    color: getStatusColor(order.status),
+                                                    background: `${getStatusColor(order.Status)}20`,
+                                                    color: getStatusColor(order.Status),
                                                     textTransform: 'capitalize',
                                                 }}>
-                                                    {order.status}
+                                                    {order.Status}
                                                 </span>
                                                 <span style={{
                                                     padding: '0.25rem 0.75rem',
                                                     borderRadius: '12px',
                                                     fontSize: '0.85rem',
                                                     fontWeight: 'bold',
-                                                    background: `${getPaymentStatusColor(order.paymentStatus)}20`,
-                                                    color: getPaymentStatusColor(order.paymentStatus),
+                                                    background: `${getPaymentStatusColor(order.PaymentStatus)}20`,
+                                                    color: getPaymentStatusColor(order.PaymentStatus),
                                                     textTransform: 'capitalize',
                                                 }}>
-                                                    {order.paymentStatus}
+                                                    {order.PaymentStatus}
                                                 </span>
                                             </div>
                                         </div>
                                         <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                                            {order.items.length} item(s) • {new Date(order.createdAt).toLocaleDateString()}
+                                            {order.Items.length} item(s) • {new Date(order.CreatedAt).toLocaleDateString()}
                                         </div>
                                     </div>
                                 ))}

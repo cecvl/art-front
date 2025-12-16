@@ -2,18 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getProfile, updateProfile, uploadArtwork, type UserProfile } from '../services/artists';
+import { fetchPrintShops, setArtworkPrintShops, type PrintShop } from '../services/artworks';
 import ArtPrintLogo from '../assets/PaaJuuPrints.svg';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import Footer from '../components/navigation/Footer';
 import { toast } from 'sonner';
-
-interface PrintShop {
-    id: string;
-    name: string;
-    materials: string;
-    rating: number;
-}
 
 const ArtistManagementConsole = () => {
     const navigate = useNavigate();
@@ -40,10 +34,13 @@ const ArtistManagementConsole = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const printShops: PrintShop[] = [
-        { id: '1', name: 'Nairobi Art House', materials: 'Canvas, Wood', rating: 4.8 },
-        { id: '2', name: 'ColorPress Ltd', materials: 'Fine Art Paper', rating: 4.5 },
-    ];
+    // Print shop state
+    const [printShops, setPrintShops] = useState<PrintShop[]>([]);
+    const [loadingShops, setLoadingShops] = useState(false);
+    const [selectedArtworkId, setSelectedArtworkId] = useState<string | null>(null);
+    const [selectedShopIds, setSelectedShopIds] = useState<string[]>([]);
+    const [showShopSelectionModal, setShowShopSelectionModal] = useState(false);
+    const [savingShops, setSavingShops] = useState(false);
 
     const pendingPayouts = 450.00;
     const ordersProcessed = 1245;
@@ -73,6 +70,24 @@ const ArtistManagementConsole = () => {
         };
 
         loadProfile();
+    }, []);
+
+    // Fetch print shops on mount
+    useEffect(() => {
+        const loadPrintShops = async () => {
+            setLoadingShops(true);
+            try {
+                const shops = await fetchPrintShops();
+                setPrintShops(shops);
+            } catch (error) {
+                console.error('Error loading print shops:', error);
+                toast.error('Failed to load print shops');
+            } finally {
+                setLoadingShops(false);
+            }
+        };
+
+        loadPrintShops();
     }, []);
 
     const handleLogout = async () => {
@@ -164,7 +179,51 @@ const ArtistManagementConsole = () => {
     };
 
     const handleEditArtwork = (artworkId: string) => {
-        toast.info(`Edit artwork ${artworkId} - coming soon`);
+        const artwork = profile?.artworks.find(a => a.id === artworkId);
+        if (!artwork) return;
+
+        setSelectedArtworkId(artworkId);
+        setSelectedShopIds(artwork.eligiblePrintShops || []);
+        setShowShopSelectionModal(true);
+    };
+
+    const handleToggleShop = (shopId: string) => {
+        setSelectedShopIds(prev => {
+            if (prev.includes(shopId)) {
+                return prev.filter(id => id !== shopId);
+            } else {
+                return [...prev, shopId];
+            }
+        });
+    };
+
+    const handleSaveShopSelection = async () => {
+        if (!selectedArtworkId) return;
+
+        setSavingShops(true);
+        try {
+            await setArtworkPrintShops(selectedArtworkId, selectedShopIds);
+            toast.success('Print shop preferences saved!');
+
+            // Update local profile data
+            if (profile) {
+                const updatedArtworks = profile.artworks.map(artwork =>
+                    artwork.id === selectedArtworkId
+                        ? { ...artwork, eligiblePrintShops: selectedShopIds }
+                        : artwork
+                );
+                setProfile({ ...profile, artworks: updatedArtworks });
+            }
+
+            setShowShopSelectionModal(false);
+            setSelectedArtworkId(null);
+            setSelectedShopIds([]);
+        } catch (error) {
+            console.error('Error saving shop selection:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to save shop selection');
+        } finally {
+            setSavingShops(false);
+        }
     };
 
     const handleAvatarUpload = () => {
@@ -616,28 +675,42 @@ const ArtistManagementConsole = () => {
                             />
                         </div>
 
-                        <div style={{ textAlign: 'right' }}>
+                        <div style={{ textAlign: 'right', marginBottom: '10px' }}>
                             <span style={{
-                                color: '#1a1a1a',
-                                textDecoration: 'underline',
-                                fontWeight: 'bold',
-                                fontSize: '0.9rem',
-                                cursor: 'pointer',
+                                color: '#666',
+                                fontSize: '0.85rem',
                             }}>
-                                See all shops *
+                                {printShops.length} shop{printShops.length !== 1 ? 's' : ''} available
                             </span>
                         </div>
 
-                        {/* Mock Result List */}
-                        <div style={{ marginTop: '20px' }}>
-                            {printShops.map((shop) => (
-                                <div key={shop.id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
-                                    <strong>{shop.name}</strong><br />
-                                    <span style={{ fontSize: '0.8rem', color: '#888' }}>
-                                        {shop.materials} • {shop.rating}★
-                                    </span>
+                        {/* Print Shop List */}
+                        <div style={{ marginTop: '20px', maxHeight: '300px', overflowY: 'auto' }}>
+                            {loadingShops ? (
+                                <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                                    Loading print shops...
                                 </div>
-                            ))}
+                            ) : printShops.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                                    No print shops available
+                                </div>
+                            ) : (
+                                printShops
+                                    .filter(shop =>
+                                        searchQuery === '' ||
+                                        shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        shop.location.city.toLowerCase().includes(searchQuery.toLowerCase())
+                                    )
+                                    .map((shop) => (
+                                        <div key={shop.id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+                                            <strong>{shop.name}</strong><br />
+                                            <span style={{ fontSize: '0.8rem', color: '#888' }}>
+                                                {shop.location.city}, {shop.location.state}
+                                                {shop.rating && ` • ${shop.rating}★`}
+                                            </span>
+                                        </div>
+                                    ))
+                            )}
                         </div>
                     </div>
 
@@ -874,6 +947,140 @@ const ArtistManagementConsole = () => {
                                 disabled={!artworkFile || !artworkTitle.trim() || !artworkDescription.trim() || isUploading}
                             >
                                 {isUploading ? 'Uploading...' : 'Upload Artwork'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shop Selection Modal */}
+            {showShopSelectionModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        background: 'rgba(0,0,0,0.5)',
+                        backdropFilter: 'blur(4px)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px',
+                    }}
+                    onClick={() => !savingShops && setShowShopSelectionModal(false)}
+                >
+                    <div
+                        style={{
+                            background: '#fff',
+                            borderRadius: '8px',
+                            maxWidth: '600px',
+                            width: '100%',
+                            maxHeight: '90vh',
+                            overflow: 'auto',
+                            padding: '24px',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.5rem' }}>
+                            Select Eligible Print Shops
+                        </h2>
+
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '20px' }}>
+                            Choose which print shops can fulfill orders for this artwork.
+                            {selectedShopIds.length > 0 && (
+                                <span style={{ color: '#FFD700', fontWeight: 'bold' }}>
+                                    {' '}{selectedShopIds.length} selected
+                                </span>
+                            )}
+                        </p>
+
+                        {/* Shop List with Checkboxes */}
+                        <div style={{
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            maxHeight: '400px',
+                            overflowY: 'auto',
+                            marginBottom: '20px',
+                        }}>
+                            {printShops.length === 0 ? (
+                                <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                                    No print shops available
+                                </div>
+                            ) : (
+                                printShops.map((shop) => (
+                                    <div
+                                        key={shop.id}
+                                        onClick={() => handleToggleShop(shop.id)}
+                                        style={{
+                                            padding: '12px 16px',
+                                            borderBottom: '1px solid #eee',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '12px',
+                                            background: selectedShopIds.includes(shop.id) ? '#fffbe6' : 'transparent',
+                                            transition: 'background 0.2s',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!selectedShopIds.includes(shop.id)) {
+                                                e.currentTarget.style.background = '#f5f5f5';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!selectedShopIds.includes(shop.id)) {
+                                                e.currentTarget.style.background = 'transparent';
+                                            }
+                                        }}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedShopIds.includes(shop.id)}
+                                            onChange={(e) => {
+                                                e.stopPropagation();
+                                                handleToggleShop(shop.id);
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
+                                            style={{
+                                                width: '18px',
+                                                height: '18px',
+                                                cursor: 'pointer',
+                                            }}
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                                                {shop.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                                                {shop.location.city}, {shop.location.state}
+                                                {shop.rating && ` • ${shop.rating}★`}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowShopSelectionModal(false)}
+                                disabled={savingShops}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSaveShopSelection}
+                                disabled={savingShops}
+                                style={{
+                                    background: '#FFD700',
+                                    color: '#1a1a1a',
+                                }}
+                            >
+                                {savingShops ? 'Saving...' : 'Save Selection'}
                             </Button>
                         </div>
                     </div>

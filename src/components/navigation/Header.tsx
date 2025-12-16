@@ -55,6 +55,7 @@ const Header: React.FC<{
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleArtistsClick = () => {
     navigate('/artists');
@@ -71,20 +72,20 @@ const Header: React.FC<{
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex items-center border-b border-gray-200 bg-gray-50 px-3 py-3 sm:px-4">
+      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-gray-50 px-3 py-2 sm:py-3 sm:px-4">
         {/* LOGO ON THE LEFT */}
-        <div className="flex flex-none items-center min-w-[62px]">
+        <div className="flex flex-none items-center">
           <img
             src={ArtPrintLogo}
             alt="PaaJuu Prints Logo"
-            className="ml-1 mr-6 cursor-pointer transition-opacity hover:opacity-80"
-            style={{ height: 80, width: 'auto' }}
+            className="cursor-pointer transition-opacity hover:opacity-80"
+            style={{ height: 'clamp(50px, 10vw, 80px)', width: 'auto' }}
             onClick={onHomeClick}
           />
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex flex-1 justify-center gap-2 min-w-0">
+        {/* Desktop Navigation - Hidden on Mobile */}
+        <nav className="hidden md:flex flex-1 justify-center gap-2 min-w-0">
           <Button
             variant={currentPage === "home" ? "secondary" : "ghost"}
             onClick={onHomeClick}
@@ -108,39 +109,173 @@ const Header: React.FC<{
           >
             PRINT SHOP
           </Button>
-        </div>
+        </nav>
 
-        {/* Right Side - Cart + Auth */}
-        <div className="flex flex-1 items-center justify-end gap-2 min-w-0">
-          {onCartClick && <CartIcon onClick={onCartClick} itemCount={cartItemCount} />}
+        {/* Right Side - Cart + Auth + Mobile Menu */}
+        <div className="flex items-center justify-end gap-2">
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2 hover:bg-gray-200 rounded-md transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {mobileMenuOpen ? (
+                <>
+                  <path d="M18 6L6 18" />
+                  <path d="M6 6l12 12" />
+                </>
+              ) : (
+                <>
+                  <path d="M3 12h18" />
+                  <path d="M3 6h18" />
+                  <path d="M3 18h18" />
+                </>
+              )}
+            </svg>
+          </button>
 
-          {loading ? (
-            // Loading skeleton
-            <div className="h-9 w-24 animate-pulse rounded-md bg-gray-200" />
-          ) : isAuthenticated && user ? (
-            // Authenticated: Show User Menu
-            <UserMenu user={user} onLogout={handleLogout} />
-          ) : (
-            // Not Authenticated: Show Login/Signup Buttons
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowLoginModal(true)}
-              >
-                Login
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setShowSignUpModal(true)}
-              >
-                Sign Up
-              </Button>
-            </>
-          )}
+          {/* Desktop Cart + Auth */}
+          <div className="hidden sm:flex items-center gap-2">
+            {onCartClick && <CartIcon onClick={onCartClick} itemCount={cartItemCount} />}
+
+            {loading ? (
+              // Loading skeleton
+              <div className="h-9 w-24 animate-pulse rounded-md bg-gray-200" />
+            ) : isAuthenticated && user ? (
+              // Authenticated: Show User Menu
+              <UserMenu user={user} onLogout={handleLogout} />
+            ) : (
+              // Not Authenticated: Show Login/Signup Buttons
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLoginModal(true)}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowSignUpModal(true)}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Slide-out */}
+      <div
+        className={`fixed top-0 right-0 z-50 h-full w-64 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Mobile Menu Header */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <span className="font-semibold text-lg">Menu</span>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-md"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18" />
+                <path d="M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Navigation Links */}
+          <nav className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-2">
+              <button
+                onClick={() => { onHomeClick?.(); setMobileMenuOpen(false); }}
+                className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${currentPage === 'home' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+              >
+                NEW ARRIVALS
+              </button>
+              <button
+                onClick={() => { handleArtistsClick(); setMobileMenuOpen(false); }}
+                className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${currentPage === 'artists' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+              >
+                ARTISTS
+              </button>
+              <button
+                onClick={() => { navigate('/print-shop'); setMobileMenuOpen(false); }}
+                className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${currentPage === 'printshop' ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+              >
+                PRINT SHOP
+              </button>
+
+              {onCartClick && (
+                <button
+                  onClick={() => { onCartClick(); setMobileMenuOpen(false); }}
+                  className="w-full text-left px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                >
+                  <span>Cart</span>
+                  {cartItemCount > 0 && (
+                    <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Auth Buttons */}
+            {!loading && (
+              <div className="mt-6 space-y-2">
+                {isAuthenticated && user ? (
+                  <>
+                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Signed in as</p>
+                      <p className="font-medium text-gray-900 truncate">{user.email}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                    >
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => { setShowLoginModal(true); setMobileMenuOpen(false); }}
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      variant="default"
+                      className="w-full"
+                      onClick={() => { setShowSignUpModal(true); setMobileMenuOpen(false); }}
+                    >
+                      Sign Up
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          </nav>
+        </div>
+      </div>
 
       {/* Login Modal */}
       <LoginModal

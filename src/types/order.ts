@@ -1,21 +1,22 @@
 // Order types matching backend models
+// IMPORTANT: Backend Go struct doesn't have JSON tags, so fields are capitalized
 export interface Order {
-    orderId: string;
-    buyerId: string;
-    printShopId: string;
-    items: CartItem[];
-    printOptions: PrintOrderOptions;
-    totalAmount: number;
-    paymentMethod?: string;
-    transactionId?: string;
-    paymentStatus: 'unpaid' | 'partial' | 'paid';
-    paymentId?: string;
-    deliveryStatus: 'pending' | 'processing' | 'ready' | 'delivered';
-    deliveryMethod?: 'pickup' | 'shipping';
-    pickupLocation?: string;
-    status: 'pending' | 'confirmed' | 'processing' | 'ready' | 'completed';
-    createdAt: string;
-    updatedAt: string;
+    OrderID: string;
+    BuyerID: string;
+    PrintShopID: string;
+    Items: CartItem[];
+    PrintOptions: PrintOrderOptions;
+    TotalAmount: number;
+    PaymentMethod?: string;
+    TransactionID?: string;
+    PaymentStatus: 'unpaid' | 'partial' | 'paid';
+    PaymentID?: string;
+    DeliveryStatus: 'pending' | 'processing' | 'ready' | 'delivered';
+    DeliveryMethod?: 'pickup' | 'shipping';
+    PickupLocation?: string;
+    Status: 'pending' | 'confirmed' | 'processing' | 'ready' | 'completed';
+    CreatedAt: string;
+    UpdatedAt: string;
 }
 
 export interface CartItem {
@@ -41,3 +42,4 @@ export interface CheckoutRequest {
 
 // Backend returns Order directly, not wrapped in {order: ...}
 export type CheckoutResponse = Order;
+

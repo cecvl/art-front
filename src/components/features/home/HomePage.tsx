@@ -11,30 +11,29 @@ const getResponsivePadding = () =>
 
 // --- HERO SECTION ---
 const Hero: React.FC = () => {
-  const isSmall = typeof window !== "undefined" && window.innerWidth < 500;
-  const isMedium = typeof window !== "undefined" && window.innerWidth < 700;
-
   return (
     <section
       style={{
-        paddingTop: 2,
-        paddingBottom: 10,
-        paddingLeft: isMedium ? 16 : 28,
-        paddingRight: isMedium ? 16 : 28,
-        width: "100%",
-        boxSizing: "border-box",
-        textAlign: "center",
-        background: "transparent",
+        paddingTop: 'clamp(8px, 2vw, 16px)',
+        paddingBottom: 'clamp(20px, 4vw, 40px)',
+        paddingLeft: 'clamp(16px, 4vw, 28px)',
+        paddingRight: 'clamp(16px, 4vw, 28px)',
+        width: '100%',
+        boxSizing: 'border-box',
+        textAlign: 'center',
+        background: 'transparent',
         margin: 0,
       }}
     >
       <h1
         style={{
-          fontSize: isSmall ? 48 : "6vw",
+          fontSize: 'clamp(32px, 8vw, 72px)',
           fontWeight: 700,
-          letterSpacing: -2,
+          letterSpacing: 'clamp(-1px, -0.05em, -2px)',
           lineHeight: 1.1,
-          marginBottom: 20,
+          marginBottom: 'clamp(12px, 3vw, 20px)',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
         }}
       >
         Art for Every Space. Where Creativty Meets Collectors.
@@ -42,13 +41,15 @@ const Hero: React.FC = () => {
 
       <h2
         style={{
-          fontSize: isSmall ? 16 : "1.5vw",
+          fontSize: 'clamp(14px, 3vw, 24px)',
           fontWeight: 400,
-          color: "#666",
+          color: '#666',
           lineHeight: 1.6,
-          maxWidth: 800,
-          margin: "0 auto",
-          padding: "0 20px",
+          maxWidth: 'min(90%, 800px)',
+          margin: '0 auto',
+          padding: '0 clamp(12px, 3vw, 20px)',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
         }}
       >
         Transform your walls with meaningful creations made by diverse artists. Find art that reflects who you are and who you love.
@@ -67,36 +68,34 @@ const ArtGrid: React.FC<{
   // Display all artworks - no limit (Pinterest-style)
   const displayedItems = artworks;
 
-  const isSmall = typeof window !== "undefined" && window.innerWidth < 600;
-  const isMedium = typeof window !== "undefined" && window.innerWidth < 700;
-
   return (
     <section
       style={{
-        padding: isSmall ? "18px 0 38px 0" : "36px 0 80px 0",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
+        padding: 'clamp(18px, 4vw, 36px) 0 clamp(38px, 8vw, 80px) 0',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
       }}
     >
       <div
         style={{
-          width: "100%",
-          paddingLeft: isMedium ? 10 : 24,
-          paddingRight: isMedium ? 10 : 24,
-          boxSizing: "border-box",
-          columnCount: isSmall ? 1 : isMedium ? 2 : 3,
-          columnGap: isSmall ? 12 : 32,
+          width: '100%',
+          paddingLeft: 'clamp(10px, 2vw, 24px)',
+          paddingRight: 'clamp(10px, 2vw, 24px)',
+          boxSizing: 'border-box',
+          columnCount: 'auto',
+          columnWidth: 'clamp(280px, 33vw, 400px)',
+          columnGap: 'clamp(12px, 2vw, 32px)',
         }}
       >
         {displayedItems.map((item) => (
           <div
             key={item.id}
             style={{
-              breakInside: "avoid",
-              marginBottom: isSmall ? 12 : 32,
-              display: "inline-block",
-              width: "100%",
+              breakInside: 'avoid',
+              marginBottom: 'clamp(12px, 2vw, 32px)',
+              display: 'inline-block',
+              width: '100%',
             }}
           >
             <ArtCard

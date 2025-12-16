@@ -107,8 +107,8 @@ const LoginModal: React.FC<{ open: boolean; onClose: () => void; onSignUpClick: 
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-sm">
+      <div className="flex min-h-svh w-full items-center justify-center p-4 sm:p-6 md:p-10">
+        <div className="w-full max-w-[95vw] sm:max-w-sm">
           <LoginForm
             onSignUpClick={() => { onClose(); onSignUpClick(); }}
             onClose={onClose}

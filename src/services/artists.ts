@@ -12,6 +12,7 @@ export interface Artwork {
   description?: string;
   imageUrl: string;
   artistId: string;
+  eligiblePrintShops?: string[];
 }
 
 export interface UserProfile {

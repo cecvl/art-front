@@ -4,7 +4,6 @@ import { useCart } from '../context/CartContext';
 import { checkout } from '../services/orders';
 import { createPayment } from '../services/payment';
 import { syncCartToBackend } from '../services/cart';
-import type { PaymentType } from '../types/payment';
 import ArtPrintLogo from '../assets/PaaJuuPrints.svg';
 import { Button } from '../components/ui/button';
 import Footer from '../components/navigation/Footer';
@@ -12,18 +11,12 @@ import Footer from '../components/navigation/Footer';
 const Checkout = () => {
     const navigate = useNavigate();
     const { cartItems, clearCart } = useCart();
-    const [paymentType, setPaymentType] = useState<PaymentType>('full');
     const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'visa' | 'simulated'>('mpesa');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const calculateTotal = () => {
         return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-    };
-
-    const calculatePaymentAmount = () => {
-        const total = calculateTotal();
-        return paymentType === 'deposit' ? total * 0.5 : total;
     };
 
     const handleCheckout = async () => {
@@ -43,14 +36,14 @@ const Checkout = () => {
                 deliveryMethod: 'shipping', // Default to shipping
             });
             console.log('✅ Order created:', order);
-            console.log('📝 Order ID:', order.orderId);
+            console.log('📝 Order ID:', order.OrderID);
 
             // Step 2: Create payment
-            console.log('💳 Creating payment for order:', order.orderId);
+            console.log('💳 Creating payment for order:', order.OrderID);
             const paymentResponse = await createPayment({
-                orderId: order.orderId,
+                orderId: order.OrderID, // Backend payment handler expects 'orderId' in request
                 paymentMethod,
-                paymentType,
+                paymentType: 'full', // Always full payment
             });
             console.log('✅ Payment created:', paymentResponse);
 
@@ -174,17 +167,18 @@ const Checkout = () => {
             <div style={{ flex: 1, paddingBottom: '50px' }}>
                 <div style={{
                     maxWidth: '800px',
-                    margin: '2rem auto',
+                    margin: 'clamp(1rem, 3vw, 2rem) auto',
                     background: '#ffffff',
                     boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                     borderRadius: '8px',
-                    padding: '2rem',
+                    padding: 'clamp(1rem, 3vw, 2rem)',
                 }}>
                     <h2 style={{
                         marginTop: 0,
                         borderBottom: '1px solid #e0e0e0',
                         paddingBottom: '1rem',
                         color: '#1a1a1a',
+                        fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
                     }}>
                         Checkout
                     </h2>
@@ -205,17 +199,18 @@ const Checkout = () => {
 
                     {/* Cart Items */}
                     <div style={{ marginTop: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#1a1a1a' }}>Order Summary</h3>
+                        <h3 style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', marginBottom: '1rem', color: '#1a1a1a' }}>Order Summary</h3>
                         {cartItems.map((item) => (
                             <div key={item.id} style={{
                                 display: 'flex',
-                                gap: '20px',
-                                padding: '1rem 0',
+                                flexDirection: window.innerWidth < 480 ? 'column' : 'row',
+                                gap: 'clamp(12px, 2vw, 20px)',
+                                padding: 'clamp(0.75rem, 2vw, 1rem) 0',
                                 borderBottom: '1px solid #e0e0e0',
                             }}>
                                 <div style={{
-                                    width: '80px',
-                                    height: '60px',
+                                    width: window.innerWidth < 480 ? '100%' : '80px',
+                                    height: window.innerWidth < 480 ? '200px' : '60px',
                                     backgroundColor: '#eee',
                                     border: '1px solid #ccc',
                                     borderRadius: '4px',
@@ -235,14 +230,14 @@ const Checkout = () => {
                                 <div style={{ flexGrow: 1 }}>
                                     <div style={{
                                         fontWeight: 'bold',
-                                        fontSize: '1rem',
+                                        fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                                         marginBottom: '3px',
                                     }}>
                                         {item.title}
                                     </div>
                                     <div style={{
                                         color: '#666',
-                                        fontSize: '0.85rem',
+                                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
                                     }}>
                                         {item.material} • {item.size} • Qty: {item.quantity}
                                     </div>
@@ -250,9 +245,9 @@ const Checkout = () => {
 
                                 <div style={{
                                     fontWeight: 'bold',
-                                    fontSize: '1rem',
+                                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                                     color: '#1a1a1a',
-                                    textAlign: 'right',
+                                    textAlign: window.innerWidth < 480 ? 'left' : 'right',
                                 }}>
                                     KES {(item.price * item.quantity).toLocaleString()}
                                 </div>
@@ -260,91 +255,52 @@ const Checkout = () => {
                         ))}
                     </div>
 
-                    {/* Payment Type Selection */}
-                    <div style={{ marginTop: '2rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#1a1a1a' }}>Payment Type</h3>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button
-                                onClick={() => setPaymentType('full')}
-                                style={{
-                                    flex: 1,
-                                    padding: '1rem',
-                                    border: paymentType === 'full' ? '2px solid #1a1a1a' : '1px solid #ccc',
-                                    borderRadius: '8px',
-                                    background: paymentType === 'full' ? '#f5f5f5' : 'white',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Full Payment</div>
-                                <div style={{ fontSize: '0.9rem', color: '#666' }}>Pay 100% now</div>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '0.5rem', color: '#1a1a1a' }}>
-                                    KES {calculateTotal().toLocaleString()}
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => setPaymentType('deposit')}
-                                style={{
-                                    flex: 1,
-                                    padding: '1rem',
-                                    border: paymentType === 'deposit' ? '2px solid #1a1a1a' : '1px solid #ccc',
-                                    borderRadius: '8px',
-                                    background: paymentType === 'deposit' ? '#f5f5f5' : 'white',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>50% Deposit</div>
-                                <div style={{ fontSize: '0.9rem', color: '#666' }}>Pay remaining 50% later</div>
-                                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '0.5rem', color: '#1a1a1a' }}>
-                                    KES {(calculateTotal() * 0.5).toLocaleString()}
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-
                     {/* Payment Method Selection */}
                     <div style={{ marginTop: '2rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#1a1a1a' }}>Payment Method</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                        <h3 style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', marginBottom: '1rem', color: '#1a1a1a' }}>Payment Method</h3>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                            gap: 'clamp(0.75rem, 2vw, 1rem)'
+                        }}>
                             <button
                                 onClick={() => setPaymentMethod('mpesa')}
                                 style={{
-                                    padding: '1rem',
+                                    padding: 'clamp(0.75rem, 2vw, 1rem)',
                                     border: paymentMethod === 'mpesa' ? '2px solid #4caf50' : '1px solid #ccc',
                                     borderRadius: '8px',
                                     background: paymentMethod === 'mpesa' ? '#e8f5e9' : 'white',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', color: '#4caf50' }}>M-Pesa</div>
+                                    minHeight: '44px',
+                                }}>
+                                <div style={{ fontWeight: 'bold', color: '#4caf50', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>M-Pesa</div>
                             </button>
                             <button
                                 onClick={() => setPaymentMethod('visa')}
                                 style={{
-                                    padding: '1rem',
+                                    padding: 'clamp(0.75rem, 2vw, 1rem)',
                                     border: paymentMethod === 'visa' ? '2px solid #1a1f71' : '1px solid #ccc',
                                     borderRadius: '8px',
                                     background: paymentMethod === 'visa' ? '#e3f2fd' : 'white',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', color: '#1a1f71' }}>Visa/Card</div>
+                                    minHeight: '44px',
+                                }}>
+                                <div style={{ fontWeight: 'bold', color: '#1a1f71', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>Visa/Card</div>
                             </button>
                             <button
                                 onClick={() => setPaymentMethod('simulated')}
                                 style={{
-                                    padding: '1rem',
+                                    padding: 'clamp(0.75rem, 2vw, 1rem)',
                                     border: paymentMethod === 'simulated' ? '2px solid #ff9800' : '1px solid #ccc',
                                     borderRadius: '8px',
                                     background: paymentMethod === 'simulated' ? '#fff3e0' : 'white',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
-                                }}
-                            >
-                                <div style={{ fontWeight: 'bold', color: '#ff9800' }}>Test Payment</div>
+                                    minHeight: '44px',
+                                }}>
+                                <div style={{ fontWeight: 'bold', color: '#ff9800', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)' }}>Test Payment</div>
                             </button>
                         </div>
                     </div>
@@ -360,16 +316,18 @@ const Checkout = () => {
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             marginBottom: '1.5rem',
+                            flexWrap: 'wrap',
+                            gap: '0.5rem',
                         }}>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                Amount to Pay Now
+                            <span style={{ fontSize: 'clamp(1rem, 3vw, 1.2rem)', fontWeight: 'bold' }}>
+                                Total Amount
                             </span>
                             <span style={{
-                                fontSize: '1.8rem',
+                                fontSize: 'clamp(1.25rem, 4vw, 1.8rem)',
                                 fontWeight: 'bold',
                                 color: '#1a1a1a',
                             }}>
-                                KES {calculatePaymentAmount().toLocaleString()}
+                                KES {calculateTotal().toLocaleString()}
                             </span>
                         </div>
 
@@ -378,28 +336,16 @@ const Checkout = () => {
                             disabled={processing}
                             style={{
                                 width: '100%',
-                                padding: '1rem',
-                                fontSize: '1.1rem',
+                                padding: 'clamp(0.75rem, 2vw, 1rem)',
+                                fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
                                 fontWeight: 'bold',
                                 opacity: processing ? 0.6 : 1,
                                 cursor: processing ? 'not-allowed' : 'pointer',
+                                minHeight: '48px',
                             }}
                         >
-                            {processing ? 'Processing...' : `Pay KES ${calculatePaymentAmount().toLocaleString()}`}
+                            {processing ? 'Processing...' : `Pay KES ${calculateTotal().toLocaleString()}`}
                         </Button>
-
-                        {paymentType === 'deposit' && (
-                            <div style={{
-                                marginTop: '1rem',
-                                padding: '0.75rem',
-                                background: '#fff3e0',
-                                borderRadius: '4px',
-                                fontSize: '0.9rem',
-                                color: '#666',
-                            }}>
-                                <strong>Note:</strong> You'll pay the remaining KES {(calculateTotal() * 0.5).toLocaleString()} before delivery.
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
